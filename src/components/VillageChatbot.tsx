@@ -1,11 +1,12 @@
-import { useState, useRef, useEffect } from "react";
-import { MessageCircle, X, Send, Bot } from "lucide-react";
+import { useState, useRef, useEffect, useContext } from "react";
+import { MessageCircle, X, Send, Bot, Mic, MicOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { useFooterVisibility } from "@/hooks/useFooterVisibility";
+import { VillageContext } from "@/context/VillageContextConfig";
 
 type Message = {
   role: "user" | "assistant";
@@ -17,9 +18,12 @@ const VillageChatbot = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const recognitionRef = useRef<any>(null);
   const { i18n } = useTranslation();
   const isFooterVisible = useFooterVisibility();
+  const { config } = useContext(VillageContext);
 
   // Dynamic colors based on footer visibility
   const bgColor = isFooterVisible ? "#32D26C" : "#0B5C38";
@@ -32,6 +36,47 @@ const VillageChatbot = () => {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  // Initialize speech recognition
+  useEffect(() => {
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = false;
+      recognitionRef.current.interimResults = false;
+      
+      // Set language based on current i18n language
+      if (i18n.language === 'mr') {
+        recognitionRef.current.lang = 'mr-IN';
+      } else if (i18n.language === 'hi') {
+        recognitionRef.current.lang = 'hi-IN';
+      } else {
+        recognitionRef.current.lang = 'en-US';
+      }
+
+      recognitionRef.current.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setInput(transcript);
+        setIsListening(false);
+      };
+
+      recognitionRef.current.onerror = (event: any) => {
+        console.error('Speech recognition error:', event.error);
+        setIsListening(false);
+        toast.error("Voice input failed. Please try again.");
+      };
+
+      recognitionRef.current.onend = () => {
+        setIsListening(false);
+      };
+    }
+
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+    };
+  }, [i18n.language]);
 
   const streamChat = async (userMessage: string) => {
     const userMsg: Message = { role: "user", content: userMessage };
@@ -64,6 +109,7 @@ const VillageChatbot = () => {
           body: JSON.stringify({
             messages: [...messages, userMsg],
             language: i18n.language,
+            villageConfig: config,
           }),
         }
       );
@@ -145,6 +191,27 @@ const VillageChatbot = () => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
+    }
+  };
+
+  const toggleVoiceInput = () => {
+    if (!recognitionRef.current) {
+      toast.error("Voice input is not supported in your browser.");
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    } else {
+      try {
+        recognitionRef.current.start();
+        setIsListening(true);
+        toast.info("Listening... Speak now!");
+      } catch (error) {
+        console.error("Error starting recognition:", error);
+        toast.error("Failed to start voice input.");
+      }
     }
   };
 
@@ -230,10 +297,19 @@ const VillageChatbot = () => {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Type your message..."
-                disabled={isLoading}
+                placeholder={isListening ? "Listening..." : "Type or speak your message..."}
+                disabled={isLoading || isListening}
                 className="flex-1"
               />
+              <Button
+                onClick={toggleVoiceInput}
+                disabled={isLoading}
+                size="icon"
+                variant={isListening ? "destructive" : "outline"}
+                className="shrink-0"
+              >
+                {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+              </Button>
               <Button
                 onClick={handleSend}
                 disabled={isLoading || !input.trim()}
