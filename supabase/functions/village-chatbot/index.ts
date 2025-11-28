@@ -9,17 +9,21 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages, language = "en" } = await req.json();
+    const { messages, language = "en", villageConfig = null } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+
+    const villageConfigContext = villageConfig 
+      ? `\n\n📊 VILLAGE CONFIGURATION DATA:\n${JSON.stringify(villageConfig, null, 2)}\n\n`
+      : "\n\n⚠️ No village configuration data provided. Please inform the user that you need the village configuration data to answer their questions.\n\n";
 
     const systemPrompt = `You are VillageAI, the official assistant for Shivankhed Khurd Village Website.
 
 📂 YOUR DATA SOURCE
 
-You must answer questions ONLY using the information provided in the Village Configuration Editor JSON (villageConfig) and website content.
-
+You must answer questions ONLY using the information provided in the JSON Configuration Manager (villageConfig) and website content.
+${villageConfigContext}
 The villageConfig JSON contains all information shown on the website, including:
 • Village Overview (History & Introduction)
 • Sarpanch, Upsarpanch, Gram Sevak
