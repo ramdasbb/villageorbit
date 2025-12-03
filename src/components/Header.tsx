@@ -124,11 +124,12 @@ const Header = () => {
   return (
     <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-md border-b border-border shadow-sm">
       <div className="container mx-auto px-4">
-        {/* Main Header */}
+        {/* Main Header email contact number social icons */}
 
         {config?.contact?.office && (
           <div className="hidden sm:flex flex-col sm:flex-row items-center justify-between py-2 text-sm text-muted-foreground border-b border-border/50 gap-2">
-            <div className="sm:flex items-center gap-6">
+           
+           {/*} <div className="sm:flex items-center gap-6">
               <div className="flex items-center gap-2">
                 <Phone className="h-4 w-4" />
                 <a 
@@ -142,12 +143,12 @@ const Header = () => {
                 <Mail className="h-4 w-4" />
                 <span>{config.contact.office.email}</span>
               </div>
-            </div>
-            {/* Social Media Icons */}
+            </div>*/}
+            {/* Social Media Icons 
             <SocialMediaButtons
               social={config?.social}
               className="hidden lg:flex"
-            />
+            />*/}
             {/*<div className="text-sm">{config.contact.office.hours}</div>*/}
           </div>
         )}
