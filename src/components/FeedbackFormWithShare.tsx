@@ -136,10 +136,15 @@ const FeedbackFormWithShare = ({ socialConfig: propSocialConfig, pageTitle: prop
     }
   };
 
-  // Handle external link click - direct function, not wrapped in useCallback to avoid popup blocker
-  const handleExternalLink = (url: string | undefined, platform: string) => {
+  // Handle external link click - direct function with event handling
+  const handleExternalLink = (e: React.MouseEvent, url: string | undefined, platform: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     console.log('handleExternalLink called:', { url, platform });
-    if (!url || url.trim() === '') {
+    
+    const trimmedUrl = url?.trim();
+    if (!trimmedUrl || trimmedUrl === '') {
       toast({
         title: t('pageNotAvailable', 'Page not available'),
         description: t('linkNotConfigured', 'This link is not configured yet.'),
@@ -147,9 +152,23 @@ const FeedbackFormWithShare = ({ socialConfig: propSocialConfig, pageTitle: prop
       });
       return;
     }
-    const sanitizedUrl = url.startsWith('http') ? url : `https://${url}`;
+    
+    const sanitizedUrl = trimmedUrl.startsWith('http') ? trimmedUrl : `https://${trimmedUrl}`;
     console.log('Opening URL:', sanitizedUrl);
-    window.open(sanitizedUrl, '_blank');
+    
+    // Use direct window.open
+    const newWindow = window.open(sanitizedUrl, '_blank');
+    if (!newWindow) {
+      // Fallback: create anchor and click
+      const a = document.createElement('a');
+      a.href = sanitizedUrl;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+    
     onShare?.({ method: platform, url: sanitizedUrl });
   };
 
@@ -332,7 +351,8 @@ const FeedbackFormWithShare = ({ socialConfig: propSocialConfig, pageTitle: prop
         >
           {isInstagramEnabled && (
             <button
-              onClick={() => handleExternalLink(socialConfig.instagram, 'instagram')}
+              type="button"
+              onClick={(e) => handleExternalLink(e, socialConfig.instagram, 'instagram')}
               aria-label={t('openInstagram', 'Open Instagram')}
               className={`w-11 h-11 min-w-[44px] min-h-[44px] rounded-full ${iconBgClass} flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary animate-fade-in`}
               style={{ animationDelay: '0ms' }}
@@ -343,7 +363,8 @@ const FeedbackFormWithShare = ({ socialConfig: propSocialConfig, pageTitle: prop
 
           {isFacebookEnabled && (
             <button
-              onClick={() => handleExternalLink(socialConfig.facebook, 'facebook')}
+              type="button"
+              onClick={(e) => handleExternalLink(e, socialConfig.facebook, 'facebook')}
               aria-label={t('openFacebook', 'Open Facebook')}
               className={`w-11 h-11 min-w-[44px] min-h-[44px] rounded-full ${iconBgClass} flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary animate-fade-in`}
               style={{ animationDelay: '50ms' }}
@@ -354,7 +375,8 @@ const FeedbackFormWithShare = ({ socialConfig: propSocialConfig, pageTitle: prop
 
           {isShareEnabled && (
             <button
-              onClick={() => handleExternalLink(socialConfig.shareUrl, 'share')}
+              type="button"
+              onClick={(e) => handleExternalLink(e, socialConfig.shareUrl, 'share')}
               aria-label={t('shareProfile', 'Share this profile')}
               className={`w-11 h-11 min-w-[44px] min-h-[44px] rounded-full ${iconBgClass} flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary animate-fade-in`}
               style={{ animationDelay: '100ms' }}
