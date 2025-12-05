@@ -156,12 +156,12 @@ const Header = () => {
           {/* Logo & Title */}
         <Link to={CUSTOM_ROUTES.HOME}>
   <div className="flex items-center gap-4">
-  <div className="w-12 h-12 rounded-lg flex items-center justify-center shadow-sm">
+<div className="w-16 h-16 rounded-full bg-white flex items-center justify-center shadow-md p-1">
   <LazyLoadImage
     src="/logo.png"
     alt="Logo"
     effect="blur"
-    style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+    className="w-full h-full object-contain"
   />
 </div>
 
