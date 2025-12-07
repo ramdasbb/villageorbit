@@ -57,9 +57,9 @@ const Footer = () => {
               <h4 className="font-semibold mb-3">{t('footer.followUs')}</h4>
               <div className="flex gap-2">
                 {[
-                  { icon: Facebook, href: "#" },
-                  { icon: Twitter, href: "#" },
-                  { icon: Instagram, href: "#" },
+                  { icon: Facebook, href: "https://www.facebook.com/profile.php?id=61582823893113&mibextid=rS40aB7S9Ucbxw6v" },
+              
+                  { icon: Instagram, href: "https://www.instagram.com/shivankhed_khurd?utm_source=qr&igsh=cjIyNTE0cm41YThm " },
                   { icon: Youtube, href: "#" }
                 ].map((social, index) => (
                   <Button
@@ -147,7 +147,7 @@ const Footer = () => {
               <div className="flex items-center gap-3">
                 <Globe className="h-4 w-4 text-primary-foreground/70 flex-shrink-0" />
                 <a
-                  href={`https://${contact.office.website}`}
+                  href={'https://villageorbit.in/'}
                   className="text-primary-foreground/70 hover:text-primary-foreground text-sm"
                   target="_blank"
                   rel="noopener noreferrer"

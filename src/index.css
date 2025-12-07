@@ -262,6 +262,7 @@ All colors MUST be HSL format for theming support.
   .text-responsive-2xl {
     @apply text-2xl sm:text-3xl md:text-4xl lg:text-5xl;
   }
+  
 
   /* Responsive Grid */
   .grid-responsive {

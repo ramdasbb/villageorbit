@@ -39,6 +39,10 @@ const resources = {
       "announcements.noticeBoard": "Notice Board",
       "announcements.visitOffice": "Visit Panchayat office",
       "announcements.contactUpdates": "Contact for Updates",
+        
+      // Gov Staff Section
+      "govstaff.title": "Government Staff",
+      "govstaff.description": "Government officials working for the welfare and development of our village",
       
       // Panchayat
       "panchayat.title": "Panchayat Representatives",
@@ -69,7 +73,7 @@ const resources = {
       
       // Schemes
       "schemes.title": "Government Schemes & Services",
-      "schemes.description": "Access various government schemes and services designed for rural community development.",
+      "schemes.description": "Accessss various government schemes and services designed for rural community development.",
       "schemes.benefits": "Benefits",
       "schemes.eligibility": "Eligibility",
       "schemes.process": "Application Process",
@@ -157,6 +161,7 @@ const resources = {
       "footer.deathCertificate": "Death Certificate",
       "footer.propertyTax": "Property Tax",
       "footer.rtiApplication": "RTI Application",
+      "footer.gramSbhaResolution": "Gram Sabha Resolution 2024",
       "footer.contactInfo": "Contact Info",
       "footer.followUs": "Follow Us",
       "footer.copyright": "© {{year}} {{village}}. All rights reserved.",
@@ -215,7 +220,11 @@ const resources = {
       "hero.description": "हमारे जीवंत समुदाय, समृद्ध संस्कृति और विकास पहलों की खोज करें जो शिवनखेड (खु) को ग्रामीण महाराष्ट्र में एक आदर्श गांव बनाते हैं।",
       "hero.explore": "गांव देखें",
       "hero.contact": "पंचायत संपर्क",
-      
+
+         // Gov Staff Section
+      "govstaff.title": "सरकारी कर्मचारी",
+"govstaff.description": "हमारे गांव के विकास और कल्याण के लिए कार्य करने वाले सरकारी अधिकारी",
+
       // About
       "about.title": "हमारे गांव के बारे में",
       "about.description": "शिवनखेड (खु) गांव की समृद्ध विरासत, जीवंत संस्कृति और प्रगतिशील विकास की खोज करें।",
@@ -287,6 +296,7 @@ const resources = {
       "footer.deathCertificate": "मृत्यु प्रमाणपत्र",
       "footer.propertyTax": "संपत्ति कर",
       "footer.rtiApplication": "आरटीआई आवेदन",
+       "footer.gramSbhaResolution":"hello",
       "footer.contactInfo": "संपर्क जानकारी",
       "footer.followUs": "हमें फॉलो करें",
       "footer.copyright": "© {{year}} {{village}}। सर्वाधिकार सुरक्षित।",
@@ -297,8 +307,8 @@ const resources = {
       "footer.officialLinks": "आधिकारिक लिंक",
       
       // Schemes
-      "schemes.title": "सरकारी योजनाएं और सेवाएं",
-      "schemes.description": "ग्रामीण समुदाय विकास के लिए डिज़ाइन की गई विभिन्न सरकारी योजनाओं तक पहुंच।",
+    "schemes.title": "सरकारी योजनाएँ और सेवाएँ",
+    "schemes.description": "ग्रामीण विकास के लिए बनाई गई विभिन्न सरकारी योजनाओं और सेवाओं का लाभ उठाएँ।",
       "schemes.benefits": "लाभ",
       "schemes.eligibility": "पात्रता",
       "schemes.process": "आवेदन प्रक्रिया",
@@ -426,6 +436,10 @@ const resources = {
       "announcements.visitOffice": "पंचायत कार्यालयात भेट द्या",
       "announcements.contactUpdates": "अपडेटसाठी संपर्क साधा",
       
+          // Gov Staff Section
+      "govstaff.title": "शासकीय कर्मचारी",
+"govstaff.description": "आपल्या गावाच्या विकास आणि कल्याणासाठी कार्य करणारे शासकीय अधिकारी",
+
       // Panchayat
       "panchayat.title": "पंचायत प्रतिनिधी",
        "panchayat.description":"आपल्या गावाच्या विकास आणि कल्याणासाठी अहोरात्र कार्य करणाऱ्या आपल्या निवडून आलेल्या प्रतिनिधींना भेटा.",
@@ -476,6 +490,7 @@ const resources = {
       "footer.deathCertificate": "मृत्यू प्रमाणपत्र",
       "footer.propertyTax": "मालमत्ता कर",
       "footer.rtiApplication": "आरटीआय अर्ज",
+        "footer.gramSbhaResolution":"hello",
       "footer.contactInfo": "संपर्क माहिती",
       "footer.followUs": "आम्हाला फॉलो करा",
       "footer.copyright": "© {{year}} {{village}}. सर्व हक्क राखीव.",
@@ -486,8 +501,8 @@ const resources = {
       "footer.officialLinks": "अधिकृत दुवे",
       
       // Schemes
-      "schemes.title": "सरकारी योजना आणि सेवा",
-      "schemes.description": "ग्रामीण समुदाय विकासासाठी डिझाइन केलेल्या विविध सरकारी योजनांमध्ये प्रवेश मिळवा।",
+    "schemes.title": "शासकीय योजना आणि सेवा",
+"schemes.description": "ग्रामीण विकासासाठी तयार केलेल्या विविध शासकीय योजना आणि सेवांचा लाभ घ्या.",
       "schemes.benefits": "फायदे",
       "schemes.eligibility": "पात्रता",
       "schemes.process": "अर्ज प्रक्रिया",

@@ -14,7 +14,7 @@ interface ScrollerCardSectionProps {
 }
 
 const ScrollerCardSection = ({ cards }: ScrollerCardSectionProps) => {
-  const [selectedCard, setSelectedCard] = useState<ScrollerCard | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   if (!cards || cards.length === 0) return null;
 
@@ -35,7 +35,10 @@ const ScrollerCardSection = ({ cards }: ScrollerCardSectionProps) => {
                 >
                   <CardContent
                     className="p-3 sm:p-4 md:p-5 flex flex-col gap-3 sm:gap-4 h-full min-w-0 cursor-pointer"
-                    onClick={() => setSelectedCard(card)}
+                    onClick={() => {
+                      const realIndex = cards.findIndex((c) => c.id === card.id);
+                      setSelectedIndex(realIndex);
+                    }}
                   >
                     {/* Top: image + title */}
                     <div className="flex flex-row items-center gap-3 sm:gap-4 min-w-0">
@@ -71,35 +74,64 @@ const ScrollerCardSection = ({ cards }: ScrollerCardSectionProps) => {
       </section>
 
       {/* POPUP MODAL */}
-      {selectedCard && (
+      {selectedIndex !== null && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-card rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 md:p-8 w-full max-w-sm sm:max-w-md relative text-center">
+
+          <div className="bg-card rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 md:p-8 
+            w-full max-w-sm sm:max-w-md relative text-center">
 
             {/* Close Button */}
             <button
-              className="absolute right-3 sm:right-4 top-2 sm:top-3 text-2xl sm:text-3xl text-muted-foreground hover:text-foreground transition-colors touch-target"
-              onClick={() => setSelectedCard(null)}
+              className="absolute right-3 sm:right-4 top-2 sm:top-3 text-2xl sm:text-3xl 
+              text-muted-foreground hover:text-foreground transition-colors"
+              onClick={() => setSelectedIndex(null)}
             >
               ×
             </button>
 
+     {/* LEFT BUTTON (<) */}
+<button
+  className="absolute left-4 sm:left-6 top-1/3 -translate-y-[40%]
+  text-black hover:text-white-600 px-3 py-2 rounded-full 
+  text-xl sm:text-2xl bg-green-300 shadow-md backdrop-blur-md"
+  onClick={() => {
+    setSelectedIndex((selectedIndex - 1 + cards.length) % cards.length);
+  }}
+>
+  {"<"}
+</button>
+
+{/* RIGHT BUTTON (>) */}
+<button
+  className="absolute right-4 sm:right-6 top-1/3 -translate-y-[40%]
+  text-black hover:text-green-600 px-3 py-2 rounded-full 
+  text-xl sm:text-2xl bg-green-300 shadow-md backdrop-blur-md"
+  onClick={() => {
+    setSelectedIndex((selectedIndex + 1) % cards.length);
+  }}
+>
+  {">"}
+</button>
+
+
+
             {/* Image */}
-            {selectedCard.image && (
+            {cards[selectedIndex].image && (
               <img
-                src={selectedCard.image}
+                src={cards[selectedIndex].image}
                 className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-xl mx-auto border shadow-md object-cover"
-                alt={selectedCard.title}
+                alt={cards[selectedIndex].title}
               />
             )}
 
             {/* Title */}
             <h2 className="text-lg sm:text-xl md:text-2xl font-bold mt-3 sm:mt-4 text-primary">
-              {selectedCard.title}
+              {cards[selectedIndex].title}
             </h2>
 
             {/* Description */}
             <p className="text-muted-foreground mt-2 sm:mt-3 text-sm sm:text-base leading-relaxed">
-              {selectedCard.description}
+              {cards[selectedIndex].description}
             </p>
 
           </div>

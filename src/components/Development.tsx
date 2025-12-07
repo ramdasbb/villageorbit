@@ -175,7 +175,7 @@ const Development = ({ developmentWorks }: DevelopmentProps) => {
           ))}
         </div>
 
-        {/* Summary Statistics */}
+        {/* Summary Statistics 
         <Card className="card-elegant animate-fade-in">
           <CardHeader>
             <CardTitle className="text-2xl text-center">Development Summary</CardTitle>
@@ -226,7 +226,7 @@ const Development = ({ developmentWorks }: DevelopmentProps) => {
               </div>
             </div>
           </CardContent>
-        </Card>
+        </Card>*/}
       </div>
     </section>
   );
