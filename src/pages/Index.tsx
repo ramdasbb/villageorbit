@@ -7,6 +7,8 @@ import SectionSkeleton from "@/components/ui/skeletons/SectionSkeleton";
 import GallerySkeleton from "@/components/ui/skeletons/GallerySkeleton";
 import { VILLAGES } from "@/config/villageConfig";
 import LazySection from "@/components/LazySection";
+import { useTranslation } from "react-i18next";
+
 
 /* Lazy-loaded components */
 const ScrollerCardSection = lazy(() => import("@/components/ScrollerCardSection"));
@@ -21,6 +23,7 @@ const Development = lazy(() => import("@/components/Development"));
 const Gallery = lazy(() => import("@/components/Gallery"));
 const Contact = lazy(() => import("@/components/Contact"));
 const PeopleSection = lazy(() => import("@/components/PeopleSection"));
+const { t } = useTranslation();
 
 const Index: React.FC = () => {
   const { config, isPageVisible, loading } = useContext(VillageContext);
@@ -132,18 +135,17 @@ const Index: React.FC = () => {
         )}
 
         {/* Proud of Our People */}
-        {memoizedConfig.proudPeople?.length > 0 && (
-          <LazySection
-            component={PeopleSection}
-            fallback={<SectionSkeleton />}
-            props={{
-              title: "Proud of Our People",
-              description: "Celebrating individuals who have made our village proud through their achievements and contributions",
-              people: memoizedConfig.proudPeople,
-              sectionId: "proud-people"
-            }}
-          />
-        )}
+    <LazySection
+  component={PeopleSection}
+  fallback={<SectionSkeleton />}
+  props={{
+    title: t("proudPeople.title"),
+    description: t("proudPeople.description"),
+    people: memoizedConfig.proudPeople,
+    sectionId: "proud-people",
+  }}
+/>
+
 
         {/* Asha Workers */}
         {memoizedConfig.ashaWorkers?.length > 0 && (

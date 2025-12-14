@@ -50,20 +50,26 @@ const Hero = ({ village, panchayat }: HeroProps) => {
       </div>
 
       {/* Content */}
-      <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20">
-        <div className="max-w-4xl mx-auto text-center">
-          {/* Hero Text */}
-          <div className="animate-fade-in">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-4 sm:mb-6 leading-tight text-primary-foreground drop-shadow-lg">
-              {t("hero.title")}
-            </h1>
+    <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20">
+  <div className="max-w-4xl mx-auto text-center">
 
-            <p className="text-base sm:text-lg md:text-xl lg:text-2xl mb-3 sm:mb-4 text-primary-foreground/95 drop-shadow-md">{t("hero.subtitle")}</p>
+    {/* Transparent Glass Box */}
+<div className="bg-white/7 backdrop-blur-sm border border-white/10 rounded-2xl p-6 sm:p-8 md:p-10 shadow-lg">
 
-            <p className="text-sm sm:text-base md:text-lg mb-6 sm:mb-8 text-primary-foreground/90 max-w-3xl mx-auto leading-relaxed drop-shadow-md px-2">
-              {t("hero.description")}
-            </p>
+      {/* Hero Text */}
+      <div className="animate-fade-in">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-4 sm:mb-6 leading-tight text-primary-foreground drop-shadow-lg">
+          {t("hero.title")}
+        </h1>
 
+        <p className="text-base sm:text-lg md:text-xl lg:text-2xl mb-3 sm:mb-4 text-primary-foreground/95 drop-shadow-md">
+          {t("hero.subtitle")}
+        </p>
+
+        <p className="text-sm sm:text-base md:text-lg mb-6 sm:mb-8 text-primary-foreground/90 max-w-3xl mx-auto leading-relaxed drop-shadow-md px-2">
+          {t("hero.description")}
+        </p>
+    
             {/* Sarpanch Message */}
             {/*<Card className="bg-card/20 backdrop-blur-md border-primary-foreground/20 p-6 mb-8 max-w-2xl mx-auto shadow-lg">
               <blockquote className="text-primary-foreground/95 italic text-base mb-4 drop-shadow">
@@ -109,9 +115,12 @@ const Hero = ({ village, panchayat }: HeroProps) => {
                 {t('hero.contact')}
               </Button>
             </div> */}
-          </div>
-        </div>
-      </div>
+         </div>
+
+    </div>
+
+  </div>
+</div>
 
       {/* Scroll Indicator */}
       {/* <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">

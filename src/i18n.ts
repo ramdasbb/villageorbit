@@ -108,6 +108,12 @@ const resources = {
       "development.statusOngoing": "Work in progress - Regular updates available at Panchayat office",
       "development.statusPlanned": "Project approved - Implementation starting soon",
       
+
+      // Proud People
+"proudPeople.title": "Proud of Our People",
+"proudPeople.description":
+  "Celebrating individuals who have made our village proud through their achievements and contributions",
+
       // Gallery
       "gallery.title": "Village Gallery",
       "gallery.description": "Explore memorable moments from our village life, festivals, development projects, and community events that showcase our rich heritage and progress.",
@@ -258,6 +264,12 @@ const resources = {
       "panchayat.officeHours": "कार्यालय समय",
       "panchayat.responsibilities": "पंचायत की जिम्मेदारियां",
       
+
+      // Proud People
+"proudPeople.title": "हमारे गौरवशाली लोग",
+"proudPeople.description":
+  "उन व्यक्तियों का सम्मान जो अपनी उपलब्धियों और योगदान से हमारे गांव का नाम रोशन कर रहे हैं",
+
       // Services
       "services.title": "गांव की सेवाएं",
       "services.description": "स्थानीय व्यवसायों से लेकर स्वास्थ्य और शिक्षा तक, हमारे गाँव में उपलब्ध सभी आवश्यक सेवाओं को जानें।",
@@ -408,6 +420,13 @@ const resources = {
       "header.panchayat": "पंचायत",
       "header.contact": "संपर्क",
       
+
+      // Proud People
+"proudPeople.title": "आमच्या गावाचा अभिमान",
+"proudPeople.description":
+  "आपल्या कर्तृत्व व योगदानातून गावाचा मान वाढवणाऱ्या व्यक्तींचा गौरव",
+
+
       // Hero
       "hero.title": "शिवनखेड (खु) गावात आपले स्वागत आहे",
       "hero.subtitle": "लातूर जिल्हा, महाराष्ट्रातील एक प्रगतीशील गाव",
