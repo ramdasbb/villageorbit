@@ -76,7 +76,14 @@ export interface VillageConfig {
     secretary: PersonProfile;
     wardMembers: PersonProfile[];
     staff: PersonProfile[];
+    
+    
   };
+  
+    proudPeople?: PersonProfile[];
+  ashaWorkers?: PersonProfile[];
+  anganwadiWorkers?: PersonProfile[];
+
   announcements: any[];
   schemes: any[];
   developmentWorks: any;
@@ -109,9 +116,7 @@ export interface VillageConfig {
     text: string;
     priority?: "high" | "medium" | "low";
   }>;
-  proudPeople?: PersonProfile[];
-  ashaWorkers?: PersonProfile[];
-  anganwadiWorkers?: PersonProfile[];
+ 
   scrollerCards?: Array<{
     id: string;
     title: string;

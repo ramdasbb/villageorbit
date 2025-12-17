@@ -16,8 +16,7 @@ interface PeopleSectionProps {
 const PeopleSection = ({ title, description, people, sectionId }: PeopleSectionProps) => {
   const [selectedMember, setSelectedMember] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  if (!people || people.length === 0) return null;
+if (!people) return null;
 
   const handleMemberClick = (person: PersonProfile) => {
     setSelectedMember({

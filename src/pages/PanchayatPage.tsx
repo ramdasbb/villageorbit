@@ -1,25 +1,32 @@
-import Panchayat from "@/components/Panchayat";
+import { useContext, useEffect } from "react";
 import { VillageContext } from "@/context/VillageContextConfig";
-import { useContext } from "react";
-import NotFound from "./NotFound";
-import { usePageSEO } from "@/hooks/usePageSEO";
+import Panchayat from "@/components/Panchayat";
+import GovStaff from "@/components/GovStaff";
 import SectionSkeleton from "@/components/ui/skeletons/SectionSkeleton";
+import { useLocation } from "react-router-dom";
 
 const PanchayatPage = () => {
-  const { config, isPageVisible, loading } = useContext(VillageContext);
+  const { config, loading } = useContext(VillageContext);
+  const { hash } = useLocation();
 
-  usePageSEO({
-    title: `Panchayat Members - ${config?.village.name || 'Village'} Gram Panchayat`,
-    description: `Meet the elected representatives of ${config?.village.name || 'Village'} Gram Panchayat. Information about Sarpanch, ward members, and panchayat officials.`,
-    keywords: ['panchayat members', 'sarpanch', 'ward members', 'elected representatives', 'village officials']
-  });
+  // Scroll to anchor if hash exists
+  useEffect(() => {
+    if (hash) {
+      const el = document.querySelector(hash);
+      if (el) el.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [hash]);
 
   if (loading || !config) return <SectionSkeleton />;
-  
-  return isPageVisible("panchayat") ? (
-    <Panchayat panchayat={config.panchayat} />
-  ) : (
-    <NotFound />
+
+  return (
+    <main className="space-y-20">
+      {/* Other sections */}
+      <Panchayat {...config.panchayat} />
+
+      {/* GovStaff section */}
+      <GovStaff govStaff={config.govStaff || []} />
+    </main>
   );
 };
 

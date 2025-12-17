@@ -1,4 +1,4 @@
-import React, { useContext, lazy, Suspense, memo } from "react"; 
+import React, { useContext,useEffect, lazy, Suspense, memo } from "react"; 
 import Hero from "@/components/Hero";
 import { VillageContext } from "@/context/VillageContextConfig";
 import { usePageSEO } from "@/hooks/usePageSEO";
@@ -41,6 +41,21 @@ const Index: React.FC = () => {
     ],
     canonical: "https://shivankhedkhurd.vercel.app",
   });
+  useEffect(() => {
+  console.log("ASHA:", config?.ashaWorkers);
+  console.log("ANGANWADI:", config?.anganwadiWorkers);
+}, [config]);
+  // ✅ Normalize ASHA & Anganwadi data (supports old + new DB structure)
+  const ashaWorkers =
+    memoizedConfig?.ashaWorkers ||
+    (memoizedConfig as any)?.people?.ashaWorkers ||
+    [];
+
+  const anganwadiWorkers =
+    memoizedConfig?.anganwadiWorkers ||
+    (memoizedConfig as any)?.people?.anganwadiWorkers ||
+    [];
+
 
   if (loading || !memoizedConfig) return <HeroSkeleton />;
 
@@ -126,29 +141,23 @@ const Index: React.FC = () => {
           }}
         />
 
-        {/* Asha Workers */}
-        <LazySection
-          component={PeopleSection}
-          fallback={<SectionSkeleton />}
-          props={{
-            title: t("ashaWorkers.title") || "Asha Workers",
-            description: t("ashaWorkers.description") || "Dedicated health workers",
-            people: memoizedConfig.ashaWorkers || [],
-            sectionId: "asha-workers",
-          }}
-        />
+{ashaWorkers.length > 0 && (
+  <PeopleSection
+    title="Asha Workers"
+    description="Village health workers"
+    people={ashaWorkers}
+    sectionId="asha"
+  />
+)}
 
-        {/* Anganwadi Workers */}
-        <LazySection
-          component={PeopleSection}
-          fallback={<SectionSkeleton />}
-          props={{
-            title: t("anganwadiWorkers.title") || "Anganwadi Workers",
-            description: t("anganwadiWorkers.description") || "Childcare and nutrition workers",
-            people: memoizedConfig.anganwadiWorkers || [],
-            sectionId: "anganwadi-workers",
-          }}
-        />
+{anganwadiWorkers.length > 0 && (
+  <PeopleSection
+    title="Anganwadi Workers"
+    description="Child nutrition and care workers"
+    people={anganwadiWorkers}
+    sectionId="anganwadi"
+  />
+)}
 
         {/* Gallery */}
         <LazySection

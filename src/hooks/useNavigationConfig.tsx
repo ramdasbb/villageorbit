@@ -86,8 +86,8 @@ export const getDefaultNavigationConfig = (): NavigationConfig => ({
       isVisible: true,
       order: 4,
       items: [
-        { id: "asha", key: "asha", label: { en: "Asha Workers", hi: "आशा कार्यकर्ता", mr: "आशा कार्यकर्त्या" }, href: "/people#asha", pageKey: "people", isVisible: true, order: 1 },
-        { id: "anganwadi", key: "anganwadi", label: { en: "Anganwadi Karyakarta", hi: "आंगनवाड़ी कार्यकर्ता", mr: "अंगणवाडी कार्यकर्त्या" }, href: "/people#anganwadi", pageKey: "people", isVisible: true, order: 2 },
+        { id: "asha", key: "asha", label: { en: "Asha Workers", hi: "आशा कार्यकर्ता", mr: "आशा कार्यकर्त्या" }, href: "/#asha", pageKey: "people", isVisible: true, order: 1 },
+        { id: "anganwadi", key: "anganwadi", label: { en: "Anganwadi Karyakarta", hi: "आंगनवाड़ी कार्यकर्ता", mr: "अंगणवाडी कार्यकर्त्या" }, href: "/#anganwadi", pageKey: "people", isVisible: true, order: 2 },
       ]
     },
     {
