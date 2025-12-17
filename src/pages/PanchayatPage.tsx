@@ -21,10 +21,10 @@ const PanchayatPage = () => {
 
   return (
     <main className="space-y-20">
-      {/* Other sections */}
-      <Panchayat {...config.panchayat} />
+      {/* Panchayat section */}
+      <Panchayat panchayat={config.panchayat} />
 
-      {/* GovStaff section */}
+      {/* Government Staff section */}
       <GovStaff govStaff={config.govStaff || []} />
     </main>
   );

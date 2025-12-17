@@ -8,6 +8,7 @@ import GallerySkeleton from "@/components/ui/skeletons/GallerySkeleton";
 import { VILLAGES } from "@/config/villageConfig";
 import LazySection from "@/components/LazySection";
 import { useTranslation } from "react-i18next";
+import { useLocation } from "react-router-dom";
 
 /* Lazy-loaded components */
 const ScrollerCardSection = lazy(() => import("@/components/ScrollerCardSection"));
@@ -19,7 +20,7 @@ const Announcements = lazy(() => import("@/components/Announcements"));
 const Schemes = lazy(() => import("@/components/Schemes"));
 const Services = lazy(() => import("@/components/Services"));
 const Development = lazy(() => import("@/components/Development"));
-const Gallery = lazy(() => import("@/components/Gallery"));
+//const Gallery = lazy(() => import("@/components/Gallery"));
 const Contact = lazy(() => import("@/components/Contact"));
 const PeopleSection = lazy(() => import("@/components/PeopleSection"));
 
@@ -27,7 +28,31 @@ const Index: React.FC = () => {
   const { t } = useTranslation(); 
   const { config, isPageVisible, loading } = useContext(VillageContext);
   const memoizedConfig = config;
+const location = useLocation();
 
+useEffect(() => {
+  if (!location.hash) return;
+
+  const id = location.hash.replace("#", "");
+
+  const timeout = setTimeout(() => {
+    const el = document.getElementById(id);
+    if (el) {
+      const yOffset = -120; // header height
+      const y =
+        el.getBoundingClientRect().top +
+        window.pageYOffset +
+        yOffset;
+
+      window.scrollTo({ top: y, behavior: "smooth" });
+    }
+  }, 500);
+
+  
+
+
+    return () => clearTimeout(timeout);
+  }, [location.hash, memoizedConfig]);
   usePageSEO({
     title: `${VILLAGES.shivankhed.name} Gram Panchayat | Official Website`,
     description: `Official website of ${VILLAGES.shivankhed.name} Gram Panchayat. Access government schemes, development projects, announcements, services, and contact information.`,
@@ -57,10 +82,15 @@ const Index: React.FC = () => {
     [];
 
 
-  if (loading || !memoizedConfig) return <HeroSkeleton />;
+  const normalizeWorkers = (list: any[] = []) =>
+  list.map((p) => ({
+    name: p.name,
+    image: p.image,
+    profession: p.profession,
+    description: p.description,
+  }));
 
-  // 🔹 For debugging: log data
-  console.log("memoizedConfig:", memoizedConfig);
+  if (loading || !memoizedConfig) return <HeroSkeleton />;
 
   return (
     <div className="min-h-screen bg-background">
@@ -140,32 +170,32 @@ const Index: React.FC = () => {
             sectionId: "proud-people",
           }}
         />
+<PeopleSection
+  title="Asha Workers"
+  description="Village health workers"
+  people={normalizeWorkers(ashaWorkers)}
+  sectionId="asha"
+/>
 
-{ashaWorkers.length > 0 && (
-  <PeopleSection
-    title="Asha Workers"
-    description="Village health workers"
-    people={ashaWorkers}
-    sectionId="asha"
-  />
-)}
-
-{anganwadiWorkers.length > 0 && (
-  <PeopleSection
-    title="Anganwadi Workers"
-    description="Child nutrition and care workers"
-    people={anganwadiWorkers}
-    sectionId="anganwadi"
-  />
-)}
-
-        {/* Gallery */}
+<PeopleSection
+  title="Anganwadi Workers"
+  description="Child nutrition and care workers"
+  people={normalizeWorkers(anganwadiWorkers)}
+  sectionId="anganwadi"
+/>
+<PeopleSection
+  title="Anganwadi Workers"
+  description="Child nutrition and care workers"
+  people={normalizeWorkers(anganwadiWorkers)}
+  sectionId="anganwadi"
+/>
+        {/* Gallery 
         <LazySection
           component={Gallery}
           fallback={<GallerySkeleton />}
           props={{ gallery: memoizedConfig.gallery || [] }}
         />
-
+*/}
         {/* Contact */}
         <LazySection
           component={Contact}

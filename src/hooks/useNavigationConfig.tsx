@@ -50,9 +50,9 @@ export const getDefaultNavigationConfig = (): NavigationConfig => ({
       isVisible: true,
       order: 1,
       items: [
-        { id: "history", key: "history", label: { en: "History", hi: "इतिहास", mr: "इतिहास" }, href: "/about", pageKey: "about", isVisible: true, order: 1 },
-        { id: "village_map", key: "village_map", label: { en: "Village Map", hi: "गाँव का नक्शा", mr: "गावाचा नकाशा" }, href: "/about#map", pageKey: "about", isVisible: true, order: 2 },
-        { id: "festivals", key: "festivals", label: { en: "Festivals & Culture", hi: "त्योहार और संस्कृति", mr: "सण आणि संस्कृती" }, href: "/about#culture", pageKey: "about", isVisible: true, order: 3 },
+       
+        { id: "village_map", key: "village_map", label: { en: "Village Map", hi: "गाँव का नक्शा", mr: "गावाचा नकाशा" }, href: "/about#map", pageKey: "about", isVisible: true, order: 1},
+        //{ id: "festivals", key: "festivals", label: { en: "Festivals & Culture", hi: "त्योहार और संस्कृति", mr: "सण आणि संस्कृती" }, href: "/about#culture", pageKey: "about", isVisible: true, order: 2 },
       ]
     },
     {

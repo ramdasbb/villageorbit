@@ -3,15 +3,26 @@ import { useState } from 'react';
 import { Phone, Briefcase } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { useLocation } from "react-router-dom";
+import { useEffect } from "react";
 import { Button } from '@/components/ui/button';
 import MemberPopupModal from './MemberPopupModal';
 
 const GovStaff = ({ govStaff }) => {
+  
+  
   const { t } = useTranslation();
   const [selectedMember, setSelectedMember] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  if (!govStaff || govStaff.length === 0) return null;
+if (!govStaff || govStaff.length === 0) {
+  return (
+    <section id="govt" className="py-20 text-center text-muted-foreground">
+      {t("govstaff.noData")}
+    </section>
+  );
+}
+
 
   const handleMemberClick = (member) => {
     setSelectedMember({
@@ -27,34 +38,33 @@ const GovStaff = ({ govStaff }) => {
 
   return (
     <>
-      <section id="gov-staff" className="py-20 bg-muted/30">
+     <section id="govt" className="py-20 bg-muted/30">
+
         <div className="container mx-auto px-4">
 
-          {/* 🚀 Now controlled by i18n */}
           <div className="text-center mb-16 animate-fade-in">
             <h2 className="text-4xl font-bold mb-4 text-gradient">
               {t("govstaff.title")}
             </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               {t("govstaff.description")}
             </p>
           </div>
 
-          {/* Staff Cards */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {govStaff.map((staff, index) => (
-              <Card 
+              <Card
                 key={staff.name}
                 className="card-elegant hover-lift animate-fade-in cursor-pointer"
                 style={{ animationDelay: `${index * 100}ms` }}
                 onClick={() => handleMemberClick(staff)}
               >
                 <CardHeader className="text-center">
-                  <div className="w-24 h-24 mx-auto mb-3 rounded-full overflow-hidden border-2 border-accent cursor-pointer hover:border-primary transition-colors">
-                    <img 
-                      src={staff.photo} 
+                  <div className="w-24 h-24 mx-auto mb-3 rounded-full overflow-hidden border-2 border-accent">
+                    <img
+                      src={staff.photo}
                       alt={staff.name}
-                      className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
+                      className="w-full h-full object-cover"
                     />
                   </div>
                   <CardTitle className="text-lg">{staff.name}</CardTitle>
@@ -69,9 +79,9 @@ const GovStaff = ({ govStaff }) => {
                     {staff.work}
                   </p>
 
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     className="w-full"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -88,7 +98,7 @@ const GovStaff = ({ govStaff }) => {
         </div>
       </section>
 
-      <MemberPopupModal 
+      <MemberPopupModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         member={selectedMember}
