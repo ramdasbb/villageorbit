@@ -98,11 +98,11 @@ export const getDefaultNavigationConfig = (): NavigationConfig => ({
       isVisible: true,
       order: 5,
       items: [
-        { id: "birth_cert", key: "birth_cert", label: { en: "Birth Certificate", hi: "जन्म प्रमाण पत्र", mr: "जन्म दाखला" }, href: "/services#birth-cert", pageKey: "services", isVisible: true, order: 1 },
-        { id: "death_cert", key: "death_cert", label: { en: "Death Certificate", hi: "मृत्यु प्रमाण पत्र", mr: "मृत्यू दाखला" }, href: "/services#death-cert", pageKey: "services", isVisible: true, order: 2 },
-        { id: "property_tax", key: "property_tax", label: { en: "Property Tax Form", hi: "संपत्ति कर फॉर्म", mr: "मालमत्ता कर फॉर्म" }, href: "/tax-payment", pageKey: "tax_payment", isVisible: true, order: 3 },
-        { id: "rti", key: "rti", label: { en: "RTI Application", hi: "आरटीआई आवेदन", mr: "माहितीचा अधिकार अर्ज" }, href: "/services#rti", pageKey: "services", isVisible: true, order: 4 },
-        { id: "gram_sabha", key: "gram_sabha", label: { en: "Gram Sabha Resolution", hi: "ग्राम सभा प्रस्ताव", mr: "ग्रामसभा ठराव" }, href: "/notices", pageKey: "notices", isVisible: true, order: 5 },
+        { id: "birth_cert", key: "birth_cert", label: { en: "Birth Certificate", hi: "जन्म प्रमाण पत्र", mr: "जन्म दाखला" }, href: "/contact-us?service=birth-certificate", pageKey: "contact", isVisible: true, order: 1 },
+        { id: "death_cert", key: "death_cert", label: { en: "Death Certificate", hi: "मृत्यु प्रमाण पत्र", mr: "मृत्यू दाखला" }, href: "/contact-us?service=death-certificate", pageKey: "contact", isVisible: true, order: 2 },
+        { id: "property_tax", key: "property_tax", label: { en: "Property Tax Form", hi: "संपत्ति कर फॉर्म", mr: "मालमत्ता कर फॉर्म" }, href: "/contact-us?service=property-tax", pageKey: "contact", isVisible: true, order: 3 },
+        { id: "rti", key: "rti", label: { en: "RTI Application", hi: "आरटीआई आवेदन", mr: "माहितीचा अधिकार अर्ज" }, href: "/contact-us?service=rti-application", pageKey: "contact", isVisible: true, order: 4 },
+        { id: "gram_sabha", key: "gram_sabha", label: { en: "Gram Sabha Resolution", hi: "ग्राम सभा प्रस्ताव", mr: "ग्रामसभा ठराव" }, href: "/contact-us?service=gram-sabha", pageKey: "contact", isVisible: true, order: 5 },
       ]
     }
   ]

@@ -4,14 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useTranslation } from 'react-i18next';
 import ContactForm from "./ContactForm";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import DocumentsModal from "./DocumentsModal";
-import { useState } from "react";
-
-
+import { useState, useEffect, useRef } from "react";
 
 const Contact = ({contact, documents=[], quickServices=[]}) => {
   const { t } = useTranslation();
+  const [searchParams] = useSearchParams();
   const [isDocsModalOpen, setIsDocsModalOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<{
     name: string;
@@ -20,6 +19,7 @@ const Contact = ({contact, documents=[], quickServices=[]}) => {
     tips?: string[];
     buttonText?: string;
   }>({name: "", documents: []});
+  const quickServicesRef = useRef<HTMLDivElement>(null);
 
   const handleApplyClick = (service: any) => {
     // Support both old documents format and new quickServices format
@@ -32,6 +32,29 @@ const Contact = ({contact, documents=[], quickServices=[]}) => {
     });
     setIsDocsModalOpen(true);
   };
+
+  // Handle auto-opening service modal from URL query param
+  useEffect(() => {
+    const serviceParam = searchParams.get('service');
+    if (serviceParam) {
+      const allServices = quickServices.length > 0 ? quickServices : documents;
+      const matchedService = allServices.find((service: any) => 
+        service.id === serviceParam || 
+        (service.title || service.name || "").toLowerCase().replace(/\s+/g, '-') === serviceParam
+      );
+      
+      if (matchedService) {
+        // Scroll to quick services section first
+        setTimeout(() => {
+          quickServicesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          // Then open the modal after a short delay
+          setTimeout(() => {
+            handleApplyClick(matchedService);
+          }, 500);
+        }, 300);
+      }
+    }
+  }, [searchParams, quickServices, documents]);
 
   return (
     <section id="contact" className="py-20 bg-background">
@@ -175,7 +198,7 @@ const Contact = ({contact, documents=[], quickServices=[]}) => {
 
             {/* Quick Services */}
             {(quickServices.length > 0 || documents.length > 0) && (
-              <Card className="card-elegant mt-8">
+              <Card ref={quickServicesRef} id="quick-services" className="card-elegant mt-8">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-3 text-xl">
                     <FileText className="h-5 w-5 text-primary" />
