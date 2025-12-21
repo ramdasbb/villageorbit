@@ -5,12 +5,3 @@ verify_jwt = false
 
 [functions.verify-tax-payment]
 verify_jwt = false
-
-[functions.send-push-notification]
-verify_jwt = false
-
-[functions.trigger-notification]
-verify_jwt = false
-
-[functions.get-vapid-key]
-verify_jwt = false

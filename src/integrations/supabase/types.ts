@@ -732,42 +732,6 @@ export type Database = {
         }
         Relationships: []
       }
-      notification_logs: {
-        Row: {
-          body: string
-          created_at: string | null
-          event_id: string | null
-          event_type: string
-          id: string
-          sent_count: number | null
-          target_audience: string
-          title: string
-          url: string | null
-        }
-        Insert: {
-          body: string
-          created_at?: string | null
-          event_id?: string | null
-          event_type: string
-          id?: string
-          sent_count?: number | null
-          target_audience?: string
-          title: string
-          url?: string | null
-        }
-        Update: {
-          body?: string
-          created_at?: string | null
-          event_id?: string | null
-          event_type?: string
-          id?: string
-          sent_count?: number | null
-          target_audience?: string
-          title?: string
-          url?: string | null
-        }
-        Relationships: []
-      }
       page_visibility: {
         Row: {
           id: string
@@ -973,39 +937,6 @@ export type Database = {
           mobile?: string | null
           rejection_reason?: string | null
           updated_at?: string | null
-        }
-        Relationships: []
-      }
-      push_subscriptions: {
-        Row: {
-          auth: string
-          created_at: string | null
-          endpoint: string
-          id: string
-          is_admin: boolean | null
-          p256dh: string
-          updated_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          auth: string
-          created_at?: string | null
-          endpoint: string
-          id?: string
-          is_admin?: boolean | null
-          p256dh: string
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          auth?: string
-          created_at?: string | null
-          endpoint?: string
-          id?: string
-          is_admin?: boolean | null
-          p256dh?: string
-          updated_at?: string | null
-          user_id?: string | null
         }
         Relationships: []
       }
