@@ -15,17 +15,17 @@ const Footer = () => {
   const { village, contact } = config;
 
   const quickLinks = [
-    { name: t('footer.aboutVillage'), href: "#about" },
-    { name: t('footer.panchayatMembers'), href: "#panchayat" },
-    { name: t('footer.governmentSchemes'), href: "#schemes" },
-    { name: t('footer.developmentWorks'), href: "#development" },
+    { name: t('footer.aboutVillage'), href: "/about#map" },
+    { name: t('footer.panchayatMembers'), href: "/panchayat" },
+    { name: t('footer.governmentSchemes'), href: "/govt-schemes" },
+    { name: t('footer.developmentWorks'), href: "/Development" },
   ];
 
   const services = [
-    { name: t('footer.birthCertificate'), href: "#contact" },
-    { name: t('footer.deathCertificate'), href: "#contact" },
-    { name: t('footer.propertyTax'), href: "#contact" },
-    { name: t('footer.rtiApplication'), href: "#contact" },
+    { name: t('footer.birthCertificate'), href: "/contact-us?service=birth-certificate" },
+    { name: t('footer.deathCertificate'), href: "/contact-us?service=death-certificate" },
+    { name: t('footer.propertyTax'), href: "/contact-us?service=property-tax" },
+   // { name: t('footer.rtiApplication'), href: "#contact" },
   ];
 
   return (

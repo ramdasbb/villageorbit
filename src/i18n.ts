@@ -11,6 +11,14 @@ const resources = {
       "header.services": "Services", 
       "header.panchayat": "Panchayat",
       "header.contact": "Contact",
+      // Header – Auth / Navigation
+"header.home": "Home",
+"header.admin": "Admin",
+"header.myProfile": "My Profile",
+"header.login": "Login",
+"header.adminDashboard": "Admin Dashboard",
+"header.logout": "Logout",
+
       
       // Hero
       "hero.title": "Welcome to Shivankhed (Khurd) Village",
@@ -236,6 +244,15 @@ const resources = {
       "header.services": "सेवाएं",
       "header.panchayat": "पंचायत",
       "header.contact": "संपर्क",
+
+        // Header – Auth / Navigation
+    "header.home": "होम",
+    "header.admin": "प्रशासक",
+    "header.myProfile": "मेरी प्रोफ़ाइल",
+    "header.login": "लॉगिन",
+    "header.adminDashboard": "एडमिन डैशबोर्ड",
+    "header.logout": "लॉगआउट",
+
       
       // Hero
       "hero.title": "शिवनखेड (खु) गांव में आपका स्वागत है",
@@ -453,6 +470,14 @@ const resources = {
       "header.panchayat": "पंचायत",
       "header.contact": "संपर्क",
       
+      // Header – Auth / Navigation
+"header.home": "मुख्यपृष्ठ",
+"header.admin": "प्रशासक",
+"header.myProfile": "माझी प्रोफाइल",
+"header.login": "लॉगिन",
+"header.adminDashboard": "प्रशासन डॅशबोर्ड",
+"header.logout": "लॉगआउट",
+
 
       // Proud People
 "proudPeople.title": "गौरवशाली व्यक्ती",

@@ -222,13 +222,14 @@ const sections: Visible[] = [
 
                 {/* HOME Dropdown */}
                 <div className="relative">
-                  <Button
-                    variant="ghost"
-                    className="text-foreground hover:text-primary hover:bg-primary/10"
-                    onClick={() => setDesktopHomeOpen(!desktopHomeOpen)}
-                  >
-                    Home
-                  </Button>
+                <Button
+  variant="ghost"
+  className="text-foreground hover:text-primary hover:bg-primary/10"
+  onClick={() => setDesktopHomeOpen(!desktopHomeOpen)}
+>
+  {t("header.home")}
+</Button>
+
 
                   {desktopHomeOpen && (
                     <>
@@ -310,7 +311,8 @@ const sections: Visible[] = [
                         onClick={() => navigate("/admin/dashboard")}
                       >
                         <Shield className="h-4 w-4" />
-                        Admin
+                       {t("header.admin")}
+
                       </Button>
                     ) : (
                       <Button
@@ -320,7 +322,8 @@ const sections: Visible[] = [
                         onClick={() => navigate(CUSTOM_ROUTES.USER_DASHBOARD)}
                       >
                         <User className="h-4 w-4" />
-                        My Profile
+                      {t("header.myProfile")}
+
                       </Button>
                     )}
 
@@ -331,7 +334,8 @@ const sections: Visible[] = [
                       onClick={handleLogout}
                     >
                       <LogOut className="h-4 w-4" />
-                      Logout
+                    {t("header.logout")}
+
                     </Button>
                   </>
                 ) : (
@@ -342,7 +346,8 @@ const sections: Visible[] = [
                     onClick={() => navigate("/auth")}
                   >
                     <LogIn className="h-4 w-4" />
-                    Login
+                {t("header.login")}
+
                   </Button>
                 )}
               </div>
@@ -379,7 +384,7 @@ const sections: Visible[] = [
                 <div className="flex flex-col gap-2">
 
                   <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 px-2">
-                    Home
+                   {t("header.home")}
                   </div>
 
                   <Accordion type="single" collapsible className="space-y-1">
@@ -445,7 +450,7 @@ const sections: Visible[] = [
                             }}
                           >
                             <Shield className="h-4 w-4" />
-                            Admin Dashboard
+                          {t("header.admin")}
                           </Button>
                         ) : (
                           <Button
@@ -457,7 +462,8 @@ const sections: Visible[] = [
                             }}
                           >
                             <User className="h-4 w-4" />
-                            My Profile
+                         {t("header.myProfile")}
+
                           </Button>
                         )}
 
@@ -467,7 +473,8 @@ const sections: Visible[] = [
                           onClick={handleLogout}
                         >
                           <LogOut className="h-4 w-4" />
-                          Logout
+                   {t("header.logout")}
+
                         </Button>
                       </>
                     ) : (
@@ -480,7 +487,8 @@ const sections: Visible[] = [
                         }}
                       >
                         <LogIn className="h-4 w-4" />
-                        Login
+                {t("header.login")}
+
                       </Button>
                     )}
                   </div>
