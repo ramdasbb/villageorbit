@@ -25,6 +25,8 @@ const ServicePage = lazy(() => import("./pages/ServicePage"));
 const PanchayatPage = lazy(() => import("./pages/PanchayatPage"));
 const ContactUsPage = lazy(() => import("./pages/ContactUsPage"));
 //const ProudPeoplePage = lazy(() => import("@/pages/ProudPeoplePage"));
+const DocumentsModel = lazy(() => import("./pages/DocumentsModel"));
+
 
 
 const SchemePage = lazy(() => import("./pages/SchemePage"));
@@ -133,6 +135,8 @@ const App = () => (
                     path={CUSTOM_ROUTES.ADMIN_DASHBOARD}
                     element={<AdminDashboard />}
                   />
+                  <Route path="/documents" element={<DocumentsModel />} />
+
                   <Route path="/exam" element={<ExamDashboard />} />
                   <Route path="/exam/rules" element={<ExamRules />} />
                   <Route path="/exam/analytics" element={<ExamAnalytics />} />

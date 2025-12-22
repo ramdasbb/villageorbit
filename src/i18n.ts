@@ -615,7 +615,7 @@ const resources = {
       "contact.subject": "विषय",
       "contact.message": "संदेश",
       "contact.submit": "संदेश पाठवा",
-      "contact.quickServices": "त्वरित सेवाएँ",
+      "contact.quickServices": "तत्काळ सेवा",
       "contact.apply": "अर्ज करा",
       "contact.officeHours": "कार्यालय वेळ",
       "contact.phone2": "फोन",
