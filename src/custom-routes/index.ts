@@ -24,6 +24,7 @@ export const CUSTOM_ROUTES = {
     GOVT_SCHEMES: "/govt-schemes",
     DEVELOPMENT: "/development",
     GALLERY: "/gallery",
+    MEDIA_GALLERY: "/media-gallery",
     ANNOUNCEMENTS: "/announcements",
     NOTICES: "/notices",
     MARKET_PRICES: "/market-prices",
