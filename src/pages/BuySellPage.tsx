@@ -1,14 +1,16 @@
 import { usePageSEO } from "@/hooks/usePageSEO";
-import { ShoppingBag, Plus, Package, LogIn } from "lucide-react";
+import { ShoppingBag, Plus, Package, LogIn, Settings } from "lucide-react";
 import ItemList from "@/components/marketplace/ItemList";
 import PostItemForm from "@/components/marketplace/PostItemForm";
 import MyListings from "@/components/marketplace/MyListings";
+import NotificationSettings from "@/components/NotificationSettings";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
 const BuySellPage = () => {
   const { user } = useAuth();
@@ -31,14 +33,31 @@ const BuySellPage = () => {
       {/* Header Section */}
       <section className="bg-gradient-to-r from-primary/10 via-primary/5 to-background py-4 md:py-6 border-b border-border">
         <div className="container mx-auto px-3 md:px-4">
-          <div className="text-center">
-            <h1 className="text-xl md:text-3xl font-bold text-foreground mb-1 md:mb-2 flex items-center justify-center gap-2">
-              <ShoppingBag className="h-5 w-5 md:h-6 md:w-6" />
-              Buy & Sell – Market
-            </h1>
-            <p className="text-xs md:text-sm text-muted-foreground">
-              Buy and sell items in your village community
-            </p>
+          <div className="flex items-center justify-between">
+            <div className="text-center flex-1">
+              <h1 className="text-xl md:text-3xl font-bold text-foreground mb-1 md:mb-2 flex items-center justify-center gap-2">
+                <ShoppingBag className="h-5 w-5 md:h-6 md:w-6" />
+                Buy & Sell – Market
+              </h1>
+              <p className="text-xs md:text-sm text-muted-foreground">
+                Buy and sell items in your village community
+              </p>
+            </div>
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline" size="icon" className="shrink-0">
+                  <Settings className="h-4 w-4" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent>
+                <SheetHeader>
+                  <SheetTitle>Settings</SheetTitle>
+                </SheetHeader>
+                <div className="mt-6">
+                  <NotificationSettings />
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </section>
