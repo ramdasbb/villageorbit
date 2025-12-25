@@ -4,10 +4,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { useAuth } from "@/hooks/useAuth";
 import { useState, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 export const NotificationSettings = () => {
+  const { user } = useAuth();
+
   const {
     isSupported,
     isSubscribed,
@@ -15,6 +18,7 @@ export const NotificationSettings = () => {
     permission,
     subscribe,
     unsubscribe,
+    sendNotification,
   } = usePushNotifications();
 
   const [showDebug, setShowDebug] = useState(false);
@@ -23,7 +27,7 @@ export const NotificationSettings = () => {
 
   const addLog = (message: string) => {
     const timestamp = new Date().toLocaleTimeString();
-    setDebugLogs(prev => [`[${timestamp}] ${message}`, ...prev.slice(0, 49)]);
+    setDebugLogs((prev) => [`[${timestamp}] ${message}`, ...prev.slice(0, 49)]);
   };
 
   useEffect(() => {
@@ -34,52 +38,70 @@ export const NotificationSettings = () => {
 
   const checkServiceWorkerStatus = async () => {
     addLog("Checking service worker status...");
-    
-    if (!('serviceWorker' in navigator)) {
+
+    if (!("serviceWorker" in navigator)) {
       setSwStatus("❌ Service Worker not supported");
       addLog("Service Worker NOT supported in this browser");
       return;
     }
 
     try {
+      // Verify the SW file is reachable (common HTTPS/prod issue)
+      try {
+        const resp = await fetch("/sw-push.js", { cache: "no-store" });
+        addLog(`sw-push.js fetch: ${resp.status} ${resp.ok ? "(OK)" : "(NOT OK)"}`);
+      } catch (e) {
+        addLog(`sw-push.js fetch failed: ${String(e)}`);
+      }
+
       const registrations = await navigator.serviceWorker.getRegistrations();
       addLog(`Found ${registrations.length} service worker(s)`);
-      
+
       registrations.forEach((reg, i) => {
         addLog(`SW ${i + 1}: scope=${reg.scope}, active=${!!reg.active}`);
       });
 
-      // Check for push-specific SW
-      const pushReg = registrations.find(r => r.scope.includes('/push/'));
+      const pushReg = registrations.find((r) => r.scope.includes("/push/")) || null;
+      const rootReg = registrations.find((r) => r.scope === `${location.origin}/`) || null;
+
+      const pushSub = pushReg ? await pushReg.pushManager.getSubscription() : null;
+      const rootSub = rootReg ? await rootReg.pushManager.getSubscription() : null;
+
       if (pushReg) {
-        setSwStatus(`✅ Push SW Active (scope: ${pushReg.scope})`);
+        setSwStatus(`✅ Push SW registered (scope: ${pushReg.scope})`);
         addLog("Push service worker found!");
-        
-        // Check subscription
-        const sub = await pushReg.pushManager.getSubscription();
-        if (sub) {
-          addLog(`✅ Push subscription exists: ${sub.endpoint.substring(0, 50)}...`);
-        } else {
-          addLog("⚠️ No push subscription found");
-        }
+        addLog(`Push subscription: ${pushSub ? "✅ EXISTS" : "⚠️ NONE"}`);
+        if (pushSub) addLog(`Push endpoint: ${pushSub.endpoint.substring(0, 60)}...`);
       } else {
-        setSwStatus("⚠️ Push SW not registered");
         addLog("Push service worker NOT found - needs registration");
+
+        if (rootSub) {
+          setSwStatus("⚠️ Legacy push subscription found on root scope");
+          addLog(
+            "Legacy subscription exists on the main (root) service worker; it may not show notifications. Use Fix Subscription."
+          );
+          addLog(`Legacy endpoint: ${rootSub.endpoint.substring(0, 60)}...`);
+        } else {
+          setSwStatus("⚠️ Push SW not registered");
+        }
       }
 
       // Check Notification API
       addLog(`Notification permission: ${Notification.permission}`);
-      addLog(`PushManager available: ${'PushManager' in window}`);
+      addLog(`PushManager available: ${"PushManager" in window}`);
 
+      if (!user?.id) {
+        addLog("⚠️ You are not logged in. Backend test push cannot target this user.");
+      }
     } catch (err) {
-      setSwStatus(`❌ Error: ${err}`);
-      addLog(`Error checking SW: ${err}`);
+      setSwStatus(`❌ Error: ${String(err)}`);
+      addLog(`Error checking SW: ${String(err)}`);
     }
   };
 
   const testLocalNotification = async () => {
     addLog("Testing local notification...");
-    
+
     if (Notification.permission !== "granted") {
       addLog("Requesting permission...");
       const perm = await Notification.requestPermission();
@@ -93,42 +115,70 @@ export const NotificationSettings = () => {
     try {
       // Try showing notification via service worker
       const registrations = await navigator.serviceWorker.getRegistrations();
-      const pushReg = registrations.find(r => r.scope.includes('/push/'));
-      
+      const pushReg = registrations.find((r) => r.scope.includes("/push/"));
+
       if (pushReg && pushReg.active) {
-        addLog("Showing notification via SW...");
+        addLog("Showing notification via Push SW...");
         await pushReg.showNotification("🧪 Test Notification", {
-          body: "If you see this, notifications work!",
+          body: "If you see this, notifications display works!",
           icon: "/favicon.ico",
           tag: "test-" + Date.now(),
-          requireInteraction: true
+          requireInteraction: true,
         });
-        addLog("✅ Notification shown via SW!");
+        addLog("✅ Notification shown via Push SW!");
       } else {
         addLog("Showing notification via Notification API...");
         new Notification("🧪 Test Notification", {
-          body: "If you see this, notifications work!",
-          icon: "/favicon.ico"
+          body: "If you see this, notifications display works!",
+          icon: "/favicon.ico",
         });
         addLog("✅ Notification shown via API!");
       }
     } catch (err) {
-      addLog(`❌ Error showing notification: ${err}`);
+      addLog(`❌ Error showing notification: ${String(err)}`);
     }
+  };
+
+  const testBackendPush = async () => {
+    addLog("Sending backend push test...");
+    try {
+      const res = await sendNotification("🧪 Test Push", "Backend push delivery test", {
+        url: window.location.pathname,
+        tag: "backend-test-" + Date.now(),
+        userIds: user?.id ? [user.id] : undefined,
+      });
+      addLog("✅ Backend push request succeeded");
+      if (res) addLog(`Response: ${JSON.stringify(res)}`);
+    } catch (err) {
+      addLog(`❌ Backend push request failed: ${String(err)}`);
+    }
+  };
+
+  const handleFixSubscription = async () => {
+    addLog("Fix Subscription: unsubscribing + subscribing fresh...");
+    const offOk = await unsubscribe();
+    addLog(offOk ? "✅ Unsubscribe OK" : "❌ Unsubscribe failed");
+
+    const onOk = await subscribe();
+    addLog(onOk ? "✅ Subscribe OK" : "❌ Subscribe failed");
+
+    await checkServiceWorkerStatus();
   };
 
   const handleToggle = async () => {
     addLog(`Toggle clicked - currently subscribed: ${isSubscribed}`);
+
     if (isSubscribed) {
       addLog("Unsubscribing...");
-      await unsubscribe();
-      addLog("Unsubscribe complete");
+      const ok = await unsubscribe();
+      addLog(ok ? "✅ Unsubscribe OK" : "❌ Unsubscribe failed");
     } else {
       addLog("Subscribing...");
-      await subscribe();
-      addLog("Subscribe complete");
+      const ok = await subscribe();
+      addLog(ok ? "✅ Subscribe OK" : "❌ Subscribe failed");
     }
-    checkServiceWorkerStatus();
+
+    await checkServiceWorkerStatus();
   };
 
   if (!isSupported) {
@@ -241,17 +291,23 @@ export const NotificationSettings = () => {
               <p><strong>Supported:</strong> {isSupported ? "Yes" : "No"}</p>
             </div>
             
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Button size="sm" variant="outline" onClick={checkServiceWorkerStatus}>
                 Refresh Status
               </Button>
               <Button size="sm" variant="outline" onClick={testLocalNotification}>
                 Test Notification
               </Button>
+              <Button size="sm" variant="outline" onClick={handleFixSubscription}>
+                Fix Subscription
+              </Button>
+              <Button size="sm" variant="outline" onClick={testBackendPush}>
+                Backend Test Push
+              </Button>
             </div>
 
-            <ScrollArea className="h-40 w-full rounded border bg-black/90 p-2">
-              <div className="font-mono text-[10px] text-green-400 space-y-0.5">
+            <ScrollArea className="h-40 w-full rounded border bg-muted p-2">
+              <div className="font-mono text-[10px] text-foreground space-y-0.5">
                 {debugLogs.length === 0 ? (
                   <p className="text-muted-foreground">No logs yet...</p>
                 ) : (

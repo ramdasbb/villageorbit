@@ -172,6 +172,28 @@ export const usePushNotifications = () => {
       }
       console.log("[PUSH DEBUG] ✅ Permission granted!");
 
+      // Step 1.5: Clean up any legacy subscription on the root ("/") scope.
+      // Some earlier builds used the main PWA service worker for subscriptions, which may not
+      // handle push events. Cleaning it up prevents "push sent" with no notification.
+      try {
+        const legacyReg = await navigator.serviceWorker.getRegistration("/");
+        const legacyScope = legacyReg?.scope || "";
+        const isLegacy = !!legacyReg && !legacyScope.includes(PUSH_SW_SCOPE);
+
+        if (isLegacy) {
+          console.log("[PUSH DEBUG] Found legacy SW scope:", legacyScope);
+          const legacySub = await legacyReg!.pushManager.getSubscription();
+
+          if (legacySub) {
+            console.log("[PUSH DEBUG] Removing legacy subscription:", legacySub.endpoint);
+            await supabase.from("push_subscriptions").delete().eq("endpoint", legacySub.endpoint);
+            await legacySub.unsubscribe();
+          }
+        }
+      } catch (legacyErr) {
+        console.log("[PUSH DEBUG] Legacy cleanup skipped:", legacyErr);
+      }
+
       // Step 2: Register service worker
       console.log("[PUSH DEBUG] Step 2: Getting/registering service worker...");
       let registration = await navigator.serviceWorker.getRegistration(PUSH_SW_SCOPE);
@@ -256,26 +278,37 @@ export const usePushNotifications = () => {
   // Unsubscribe from push notifications
   const unsubscribe = useCallback(async (): Promise<boolean> => {
     try {
-      const registration = await navigator.serviceWorker.getRegistration(PUSH_SW_SCOPE);
-      if (!registration) return true;
+      const targets: Array<{ name: string; registration: ServiceWorkerRegistration | null }> = [
+        {
+          name: "push",
+          registration: await navigator.serviceWorker.getRegistration(PUSH_SW_SCOPE),
+        },
+        {
+          name: "root",
+          // NOTE: getRegistration() expects a *client URL*. "/" returns the SW controlling the site root.
+          registration: await navigator.serviceWorker.getRegistration("/"),
+        },
+      ];
 
-      const subscription = await registration.pushManager.getSubscription();
-      if (!subscription) return true;
+      let unsubscribedAny = false;
 
-      // Remove from database
-      await supabase
-        .from("push_subscriptions")
-        .delete()
-        .eq("endpoint", subscription.endpoint);
+      for (const t of targets) {
+        if (!t.registration) continue;
+        const sub = await t.registration.pushManager.getSubscription();
+        if (!sub) continue;
 
-      // Unsubscribe from push
-      await subscription.unsubscribe();
+        await supabase.from("push_subscriptions").delete().eq("endpoint", sub.endpoint);
+        await sub.unsubscribe();
+        unsubscribedAny = true;
+      }
 
       setState((prev) => ({ ...prev, isSubscribed: false }));
 
       toast({
         title: "Notifications Disabled",
-        description: "You won't receive push notifications anymore",
+        description: unsubscribedAny
+          ? "Notifications have been turned off for this device"
+          : "No active subscription found on this device",
       });
 
       return true;
