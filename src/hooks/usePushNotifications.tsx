@@ -6,6 +6,11 @@ import { useAuth } from "@/hooks/useAuth";
 // VAPID public key - must match the one used to generate push subscriptions
 const VAPID_PUBLIC_KEY = "BKeeemIYegVXOgB5euV_68Kl1ln39kwgqNnJOiX_51_DFriIS3dz6SSVYKBNlNYC2TugaS8hBJp-pyPCbMBY2KE";
 
+// IMPORTANT: We keep push notifications on a separate SW scope so we don't overwrite
+// the main PWA service worker (which is responsible for offline + updates).
+const PUSH_SW_URL = "/sw-push.js";
+const PUSH_SW_SCOPE = "/push/";
+
 interface PushNotificationState {
   permission: NotificationPermission;
   isSubscribed: boolean;
@@ -25,11 +30,11 @@ export const usePushNotifications = () => {
 
   // Check if push notifications are supported
   const checkSupport = useCallback(() => {
-    const isSupported = 
+    const isSupported =
       "Notification" in window &&
       "serviceWorker" in navigator &&
       "PushManager" in window;
-    
+
     return isSupported;
   }, []);
 
@@ -52,9 +57,10 @@ export const usePushNotifications = () => {
     try {
       if (!checkSupport()) return false;
 
-      const registration = await navigator.serviceWorker.ready;
+      const registration = await navigator.serviceWorker.getRegistration(PUSH_SW_SCOPE);
+      if (!registration) return false;
+
       const subscription = await registration.pushManager.getSubscription();
-      
       return !!subscription;
     } catch (error) {
       console.error("Error checking subscription:", error);
@@ -88,8 +94,8 @@ export const usePushNotifications = () => {
   // Register service worker for push
   const registerServiceWorker = useCallback(async () => {
     try {
-      const registration = await navigator.serviceWorker.register("/sw-push.js", {
-        scope: "/",
+      const registration = await navigator.serviceWorker.register(PUSH_SW_URL, {
+        scope: PUSH_SW_SCOPE,
       });
       console.log("Push SW registered:", registration.scope);
       return registration;
@@ -124,13 +130,11 @@ export const usePushNotifications = () => {
         return false;
       }
 
-      // Register service worker
-      let registration = await navigator.serviceWorker.getRegistration("/sw-push.js");
+      // Register / get push service worker (separate scope so we don't overwrite the PWA SW)
+      let registration = await navigator.serviceWorker.getRegistration(PUSH_SW_SCOPE);
       if (!registration) {
         registration = await registerServiceWorker();
       }
-
-      await navigator.serviceWorker.ready;
 
       // Subscribe to push
       const vapidKeyArray = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
@@ -166,7 +170,7 @@ export const usePushNotifications = () => {
       if (error) throw error;
 
       setState((prev) => ({ ...prev, isSubscribed: true }));
-      
+
       toast({
         title: "Notifications Enabled",
         description: "You'll receive notifications for marketplace updates",
@@ -187,7 +191,7 @@ export const usePushNotifications = () => {
   // Unsubscribe from push notifications
   const unsubscribe = useCallback(async (): Promise<boolean> => {
     try {
-      const registration = await navigator.serviceWorker.getRegistration("/sw-push.js");
+      const registration = await navigator.serviceWorker.getRegistration(PUSH_SW_SCOPE);
       if (!registration) return true;
 
       const subscription = await registration.pushManager.getSubscription();
