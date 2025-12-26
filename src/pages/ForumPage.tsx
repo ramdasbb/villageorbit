@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { useApiAuth } from "@/hooks/useApiAuth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -46,7 +46,7 @@ export default function ForumPage() {
     description: "Join village discussions and connect with community members",
   });
   
-  const { user } = useAuth();
+  const { user } = useApiAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [posts, setPosts] = useState<Post[]>([]);
@@ -88,7 +88,7 @@ export default function ForumPage() {
           const [likesResult, commentsResult, userLikeResult] = await Promise.all([
             supabase.from("post_likes").select("id", { count: "exact" }).eq("post_id", post.id),
             supabase.from("comments").select("id", { count: "exact" }).eq("post_id", post.id),
-            user ? supabase.from("post_likes").select("id").eq("post_id", post.id).eq("user_id", user.id).maybeSingle() : Promise.resolve({ data: null }),
+            user?.id ? supabase.from("post_likes").select("id").eq("post_id", post.id).eq("user_id", user.id).maybeSingle() : Promise.resolve({ data: null }),
           ]);
 
           return {
@@ -170,7 +170,7 @@ export default function ForumPage() {
         title: newPost.title.trim(),
         content: newPost.content.trim(),
         image_url: newPost.image_url.trim() || null,
-        user_id: user.id,
+        user_id: user?.id,
       });
 
       if (error) throw error;
@@ -205,9 +205,9 @@ export default function ForumPage() {
 
     try {
       if (hasLiked) {
-        await supabase.from("post_likes").delete().eq("post_id", postId).eq("user_id", user.id);
+        await supabase.from("post_likes").delete().eq("post_id", postId).eq("user_id", user?.id);
       } else {
-        await supabase.from("post_likes").insert({ post_id: postId, user_id: user.id });
+        await supabase.from("post_likes").insert({ post_id: postId, user_id: user?.id });
       }
       fetchPosts();
     } catch (error: any) {
@@ -235,7 +235,7 @@ export default function ForumPage() {
     try {
       const { error } = await supabase.from("comments").insert({
         post_id: postId,
-        user_id: user.id,
+        user_id: user?.id,
         content: newComment.trim(),
       });
 
@@ -357,7 +357,7 @@ export default function ForumPage() {
                         {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
                       </p>
                     </div>
-                    {user && post.user_id === user.id && (
+                    {user?.id && post.user_id === user.id && (
                       <Button
                         variant="ghost"
                         size="sm"

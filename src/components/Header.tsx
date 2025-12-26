@@ -32,9 +32,9 @@ import { useTranslation } from "react-i18next";
 import LanguageToggle from "./LanguageToggle";
 import ThemeToggle from "./ThemeToggle";
 
-import { useAuth } from "@/hooks/useAuth";
+import { useApiAuth } from "@/hooks/useApiAuth";
 import { usePageVisibility } from "@/hooks/usePageVisibility";
-import { supabase } from "@/integrations/supabase/client";
+import { authService } from "@/services/authService";
 import { CUSTOM_ROUTES } from "@/custom-routes";
 import { VillageContext } from "@/context/VillageContextConfig";
 import { cn } from "@/lib/utils";
@@ -61,7 +61,8 @@ const Header: React.FC = () => {
   const [desktopHomeOpen, setDesktopHomeOpen] = useState(false);
 
   const { t, i18n } = useTranslation();
-  const { user, isAdmin, isSubAdmin } = useAuth();
+  const { user, isAdmin, isSuperAdmin, loading: authLoading } = useApiAuth();
+  const isSubAdmin = false; // Will be determined by roles if needed
   const { isPageVisible } = usePageVisibility();
   const navigate = useNavigate();
   const location = useLocation();
@@ -71,8 +72,9 @@ const Header: React.FC = () => {
   const currentLang = (i18n.language?.split('-')[0] || 'en') as 'en' | 'hi' | 'mr';
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    await authService.logout();
     setIsMenuOpen(false);
+    navigate('/');
   };
 
   const navigationData = useMemo(() => {
@@ -303,7 +305,7 @@ const sections: Visible[] = [
               <div className="hidden lg:flex items-center gap-2">
                 {user ? (
                   <>
-                    {isAdmin || isSubAdmin ? (
+                    {(isAdmin || isSuperAdmin || isSubAdmin) && (
                       <Button
                         variant="outline"
                         size="sm"
@@ -312,20 +314,17 @@ const sections: Visible[] = [
                       >
                         <Shield className="h-4 w-4" />
                        {t("header.admin")}
-
-                      </Button>
-                    ) : (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="gap-2"
-                        onClick={() => navigate(CUSTOM_ROUTES.USER_DASHBOARD)}
-                      >
-                        <User className="h-4 w-4" />
-                      {t("header.myProfile")}
-
                       </Button>
                     )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-2"
+                      onClick={() => navigate(CUSTOM_ROUTES.USER_DASHBOARD)}
+                    >
+                      <User className="h-4 w-4" />
+                      {t("header.myProfile")}
+                    </Button>
 
                     <Button
                       variant="ghost"
@@ -440,7 +439,7 @@ const sections: Visible[] = [
                   <div className="mt-4 space-y-2">
                     {user ? (
                       <>
-                        {isAdmin || isSubAdmin ? (
+                        {(isAdmin || isSuperAdmin || isSubAdmin) && (
                           <Button
                             variant="outline"
                             className="w-full gap-2"
@@ -450,22 +449,20 @@ const sections: Visible[] = [
                             }}
                           >
                             <Shield className="h-4 w-4" />
-                          {t("header.admin")}
-                          </Button>
-                        ) : (
-                          <Button
-                            variant="outline"
-                            className="w-full gap-2"
-                            onClick={() => {
-                              navigate(CUSTOM_ROUTES.USER_DASHBOARD);
-                              setIsMenuOpen(false);
-                            }}
-                          >
-                            <User className="h-4 w-4" />
-                         {t("header.myProfile")}
-
+                            {t("header.admin")}
                           </Button>
                         )}
+                        <Button
+                          variant="outline"
+                          className="w-full gap-2"
+                          onClick={() => {
+                            navigate(CUSTOM_ROUTES.USER_DASHBOARD);
+                            setIsMenuOpen(false);
+                          }}
+                        >
+                          <User className="h-4 w-4" />
+                          {t("header.myProfile")}
+                        </Button>
 
                         <Button
                           variant="ghost"
@@ -473,8 +470,7 @@ const sections: Visible[] = [
                           onClick={handleLogout}
                         >
                           <LogOut className="h-4 w-4" />
-                   {t("header.logout")}
-
+                          {t("header.logout")}
                         </Button>
                       </>
                     ) : (
