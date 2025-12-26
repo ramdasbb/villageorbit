@@ -30,7 +30,7 @@ export interface PaginatedUsers {
 export interface UserListParams {
   page?: number;
   limit?: number;
-  status?: 'pending' | 'approved' | 'rejected';
+  approval_status?: 'pending' | 'approved' | 'rejected';
   search?: string;
 }
 
@@ -66,15 +66,14 @@ class AdminService {
   async getUsers(params: UserListParams = {}): Promise<ApiResponse<PaginatedUsers>> {
     const queryParams = new URLSearchParams();
     
-    if (params.page) queryParams.append('page', params.page.toString());
-    if (params.limit) queryParams.append('limit', params.limit.toString());
-    if (params.status) queryParams.append('status', params.status);
+    // Page is 0-indexed on the backend
+    queryParams.append('page', (params.page ?? 0).toString());
+    queryParams.append('limit', (params.limit ?? 20).toString());
+    if (params.approval_status) queryParams.append('approval_status', params.approval_status);
     if (params.search) queryParams.append('search', params.search);
 
     const queryString = queryParams.toString();
-    const endpoint = queryString 
-      ? `${apiConfig.endpoints.admin.users}?${queryString}` 
-      : apiConfig.endpoints.admin.users;
+    const endpoint = `${apiConfig.endpoints.admin.users}?${queryString}`;
 
     const response = await apiClient.get<ApiWrapperResponse<BackendUsersResponse>>(endpoint);
 
@@ -146,12 +145,11 @@ class AdminService {
   }
 
   /**
-   * Approve a user
+   * Approve a user (GET request as per API spec)
    */
   async approveUser(userId: string): Promise<ApiResponse<{ message: string }>> {
-    const response = await apiClient.post<ApiWrapperResponse<any>>(
-      apiConfig.endpoints.admin.approveUser(userId),
-      {}
+    const response = await apiClient.get<ApiWrapperResponse<any>>(
+      apiConfig.endpoints.admin.approveUser(userId)
     );
 
     return {
@@ -163,12 +161,12 @@ class AdminService {
   }
 
   /**
-   * Reject a user with reason
+   * Reject a user with reason (GET request with query param as per API spec)
    */
   async rejectUser(userId: string, reason: string): Promise<ApiResponse<{ message: string }>> {
-    const response = await apiClient.post<ApiWrapperResponse<any>>(
-      apiConfig.endpoints.admin.rejectUser(userId),
-      { rejection_reason: reason }
+    const encodedReason = encodeURIComponent(reason);
+    const response = await apiClient.get<ApiWrapperResponse<any>>(
+      `${apiConfig.endpoints.admin.rejectUser(userId)}?reason=${encodedReason}`
     );
 
     return {

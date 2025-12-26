@@ -72,9 +72,9 @@ const UserManagementDashboardApi = () => {
     setLoading(true);
     try {
       const response = await adminService.getUsers({
-        page: currentPage,
+        page: currentPage - 1, // API uses 0-indexed pages
         limit: 20,
-        status: statusFilter !== 'all' ? statusFilter as any : undefined,
+        approval_status: statusFilter !== 'all' ? statusFilter as any : undefined,
         search: searchTerm || undefined,
       });
 

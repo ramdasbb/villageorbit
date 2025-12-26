@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { usePageSEO } from "@/hooks/usePageSEO";
+import { useApiAuth } from "@/hooks/useApiAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -54,18 +55,15 @@ const ExamDashboard = () => {
   const [pastAttempts, setPastAttempts] = useState<ExamAttempt[]>([]);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
+  const { user, loading: authLoading, isAuthenticated } = useApiAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { permission, requestPermission, checkUpcomingExams, subscribeToExamReminders } = useNotifications();
 
   useEffect(() => {
-    checkAuth();
-  }, []);
-
-  const checkAuth = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
+    if (authLoading) return;
+    
+    if (!isAuthenticated || !user?.id) {
       toast({
         title: "Authentication Required",
         description: "Please login to access the exam system",
@@ -74,17 +72,19 @@ const ExamDashboard = () => {
       navigate("/auth");
       return;
     }
-    setUser(session.user);
-    fetchData(session.user.id);
+    
+    fetchData(user.id);
     
     // Check for upcoming exams and set up notifications
-    checkUpcomingExams(session.user.id);
-    const channel = await subscribeToExamReminders(session.user.id);
-    
-    return () => {
-      supabase.removeChannel(channel);
+    checkUpcomingExams(user.id);
+    const setupReminders = async () => {
+      const channel = await subscribeToExamReminders(user.id);
+      return () => {
+        supabase.removeChannel(channel);
+      };
     };
-  };
+    setupReminders();
+  }, [authLoading, isAuthenticated, user]);
 
   const fetchData = async (userId: string) => {
     try {
@@ -204,7 +204,7 @@ const ExamDashboard = () => {
     navigate(`/exam/${examId}/take`);
   };
 
-  if (loading) {
+  if (authLoading || loading) {
     return <CustomLoader />;
   }
 

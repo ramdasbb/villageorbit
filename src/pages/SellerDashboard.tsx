@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { useApiAuth } from "@/hooks/useApiAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -38,7 +38,7 @@ export default function SellerDashboard() {
     canonical: window.location.origin + "/seller-dashboard"
   });
 
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useApiAuth();
   const navigate = useNavigate();
   const [items, setItems] = useState<SellerItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -53,7 +53,7 @@ export default function SellerDashboard() {
   }, [authLoading, user, navigate]);
 
   const fetchSellerItems = async () => {
-    if (!user) return;
+    if (!user?.id) return;
     
     try {
       setLoading(true);

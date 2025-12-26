@@ -37,3 +37,24 @@ export type {
 
 export { healthService } from './healthService';
 export type { HealthStatus } from './healthService';
+
+export { marketplaceService } from './marketplaceService';
+export type {
+  MarketplaceItem,
+  MarketplaceListParams,
+  PaginatedItems,
+} from './marketplaceService';
+
+export { noticesService } from './noticesService';
+export type {
+  Notice,
+  NoticesListParams,
+  PaginatedNotices,
+} from './noticesService';
+
+export { feedbackService } from './feedbackService';
+export type {
+  Feedback,
+  FeedbackListParams,
+  PaginatedFeedback,
+} from './feedbackService';
