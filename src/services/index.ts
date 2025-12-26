@@ -15,7 +15,8 @@ export type {
   LoginRequest,
   AuthTokens,
   UserProfile,
-  LoginResponse,
+  UserRole,
+  LoginResponseData,
   AuthError,
 } from './authService';
 
