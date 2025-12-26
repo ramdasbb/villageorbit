@@ -170,25 +170,16 @@ useEffect(() => {
             sectionId: "proud-people",
           }}
         />
-<PeopleSection
-  title="Asha Workers"
-  description="Village health workers"
-  people={normalizeWorkers(ashaWorkers)}
+  <PeopleSection
   sectionId="asha"
+  people={normalizeWorkers(ashaWorkers)}
 />
 
 <PeopleSection
-  title="Anganwadi Workers"
-  description="Child nutrition and care workers"
-  people={normalizeWorkers(anganwadiWorkers)}
   sectionId="anganwadi"
-/>
-<PeopleSection
-  title="Anganwadi Workers"
-  description="Child nutrition and care workers"
   people={normalizeWorkers(anganwadiWorkers)}
-  sectionId="anganwadi"
 />
+
         {/* Gallery 
         <LazySection
           component={Gallery}

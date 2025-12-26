@@ -1,8 +1,20 @@
-import { createContext, useMemo, ReactNode } from "react";
-import { useVillageConfig, VillageConfig } from "@/hooks/useVillageConfig";
+import {
+  createContext,
+  useMemo,
+  ReactNode,
+  useContext
+} from "react";
+
+import {
+  useVillageConfig as useVillageConfigHook,
+  VillageConfig
+} from "@/hooks/useVillageConfig";
+
 import { usePageVisibility } from "@/hooks/usePageVisibility";
 import { useTranslation } from "react-i18next";
 
+
+// ---------- TYPES ----------
 type VillageContextType = {
   config: VillageConfig | null;
   loading: boolean;
@@ -10,6 +22,8 @@ type VillageContextType = {
   isPageVisible: (pageKey: string) => boolean;
 };
 
+
+// ---------- CONTEXT ----------
 export const VillageContext = createContext<VillageContextType>({
   config: null,
   loading: false,
@@ -17,6 +31,8 @@ export const VillageContext = createContext<VillageContextType>({
   isPageVisible: () => true,
 });
 
+
+// ---------- PROVIDER ----------
 type VillageProviderProps = {
   children: ReactNode;
   villageName?: string;
@@ -26,13 +42,16 @@ export const VillageProvider = ({
   children,
   villageName = "Shivankhed",
 }: VillageProviderProps) => {
+
   const { i18n } = useTranslation();
   const currentLanguage = i18n.language;
+
   const {
     config,
     loading: configLoading,
     error,
-  } = useVillageConfig(villageName, currentLanguage);
+  } = useVillageConfigHook(villageName, currentLanguage);
+
   const { isPageVisible, loading: visibilityLoading } = usePageVisibility();
 
   const value = useMemo(
@@ -46,6 +65,12 @@ export const VillageProvider = ({
   );
 
   return (
-    <VillageContext.Provider value={value}>{children}</VillageContext.Provider>
+    <VillageContext.Provider value={value}>
+      {children}
+    </VillageContext.Provider>
   );
 };
+
+
+// ---------- HOOK (EXPORT THIS) ----------
+export const useVillageConfig = () => useContext(VillageContext);

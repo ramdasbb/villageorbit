@@ -47,7 +47,25 @@ const resources = {
       "announcements.noticeBoard": "Notice Board",
       "announcements.visitOffice": "Visit Panchayat office",
       "announcements.contactUpdates": "Contact for Updates",
-        
+
+         // Media Gallery
+  "mediaGallery.title": "Media Gallery",
+  "mediaGallery.subtitle": "Browse photos and videos of festivals, development work and community events.",
+  "mediaGallery.photosTab": "Photo Gallery",
+  "mediaGallery.videosTab": "Video Gallery",
+  "mediaGallery.filterAll": "All",
+  "mediaGallery.noPhotosTitle": "No Photos Available",
+  "mediaGallery.noPhotosText": "Gallery photos will be updated soon.",
+  "mediaGallery.noVideosTitle": "No Videos Available",
+  "mediaGallery.noVideosText": "Video gallery will be updated soon.",
+  "mediaGallery.seoImageTitle": "Photo Gallery",
+  "mediaGallery.seoVideoTitle": "Video Gallery",
+  "mediaGallery.seoDescription": "View the official village media gallery — photos and videos",
+
+    
+
+
+
       // Gov Staff Section
       "govstaff.title": "Government Staff",
       "govstaff.description": "Government officials working for the welfare and development of our village",
@@ -118,20 +136,19 @@ const resources = {
       
 
       // Proud People
-"proudPeople.title": "Proud of Our People",
-"proudPeople.description":
+"proud-peopleWorkers.title": "Proud of Our People",
+"proud-peopleWorkers.description":
   "Celebrating individuals who have made our village proud through their achievements and contributions",
 
 
-  // Asha Workers
-"ashaWorkers.title": "Asha Workers",
-"ashaWorkers.description":
-  "Dedicated health workers serving our community with care and compassion",
+//asha worker 
+  "ashaWorkers.title": "ASHA Workers",
+  "ashaWorkers.description": "Accredited Social Health Activists who provide essential primary healthcare services, promote maternal and child health, and support community well-being at the village level.",
+//anganwadi worker 
+  "anganwadiWorkers.title": "Anganwadi Workers",
+  "anganwadiWorkers.description": "Frontline workers responsible for child nutrition, early childhood education, health awareness, and the welfare of women and children in the village.",
 
-// Anganwadi Workers
-"anganwadiWorkers.title": "Anganwadi Karyakarti",
-"anganwadiWorkers.description":
-  "Committed workers ensuring child development and women welfare in our village",
+
 
   // Development Works
 "developmentWorks.title": "Development Works",
@@ -253,6 +270,21 @@ const resources = {
     "header.adminDashboard": "एडमिन डैशबोर्ड",
     "header.logout": "लॉगआउट",
 
+
+      // Media Gallery (Hindi)
+  "mediaGallery.title": "मीडिया गैलरी",
+  "mediaGallery.subtitle": "गाँव के त्योहारों, विकास कार्यों और सामुदायिक कार्यक्रमों की तस्वीरें और वीडियो देखें।",
+  "mediaGallery.photosTab": "फोटो गैलरी",
+  "mediaGallery.videosTab": "वीडियो गैलरी",
+  "mediaGallery.filterAll": "सभी",
+  "mediaGallery.noPhotosTitle": "कोई फोटो उपलब्ध नहीं",
+  "mediaGallery.noPhotosText": "गैलरी फोटो जल्द ही अपडेट किए जाएंगे।",
+  "mediaGallery.noVideosTitle": "कोई वीडियो उपलब्ध नहीं",
+  "mediaGallery.noVideosText": "वीडियो गैलरी जल्द ही अपडेट की जाएगी।",
+  "mediaGallery.seoImageTitle": "फोटो गैलरी",
+  "mediaGallery.seoVideoTitle": "वीडियो गैलरी",
+  "mediaGallery.seoDescription": "हमारे गाँव की मीडिया गैलरी — फोटो और वीडियो देखें",
+
       
       // Hero
       "hero.title": "शिवनखेड (खु) गांव में आपका स्वागत है",
@@ -297,23 +329,21 @@ const resources = {
       "panchayat.message": "हमारे प्रिय गांव समुदाय की समृद्धि और विकास के लिए मिलकर काम कर रहे हैं।",
       "panchayat.officeHours": "कार्यालय समय",
       "panchayat.responsibilities": "पंचायत की जिम्मेदारियां",
-      
+
 
       // Proud People
-"proudPeople.title": "गौरवशाली लोग",
-"proudPeople.description":
+"proud-peopleWorkers.title": " गौरवशाली लोग",
+"proud-peopleWorkers.description":
   "उन व्यक्तियों का सम्मान जो अपनी उपलब्धियों और योगदान से हमारे गांव का नाम रोशन कर रहे हैं",
 
 
   // आशा कार्यकर्ता
-"ashaWorkers.title": "आशा कार्यकर्ता",
-"ashaWorkers.description":
-  "समुदाय के स्वास्थ्य और जागरूकता के लिए समर्पित आशा कार्यकर्ता",
 
-// आंगनवाड़ी कार्यकर्ता
-"anganwadiWorkers.title": "आंगनवाड़ी कार्यकर्ता",
-"anganwadiWorkers.description":
-  "बाल विकास और महिला कल्याण के लिए कार्यरत समर्पित आंगनवाड़ी कार्यकर्ता",
+  "ashaWorkers.title": "आशा कार्यकर्ता",
+  "ashaWorkers.description": "आशा (मान्यता प्राप्त सामाजिक स्वास्थ्य कार्यकर्ता) गांव स्तर पर प्राथमिक स्वास्थ्य सेवाएं प्रदान करती हैं, मातृ एवं शिशु स्वास्थ्य को बढ़ावा देती हैं और समुदाय के कल्याण में सहयोग करती हैं।",
+
+  "anganwadiWorkers.title": "आंगनवाड़ी कार्यकर्ता",
+  "anganwadiWorkers.description": "आंगनवाड़ी कार्यकर्ता बाल पोषण, प्रारंभिक शिक्षा, स्वास्थ्य जागरूकता तथा महिलाओं और बच्चों के कल्याण के लिए महत्वपूर्ण सेवाएं प्रदान करती हैं।",
 
   // विकास कार्य
 "developmentWorks.title": "विकास कार्य",
@@ -479,20 +509,33 @@ const resources = {
 "header.logout": "लॉगआउट",
 
 
+
+  // Media Gallery
+  "mediaGallery.title": "मीडिया गॅलरी",
+  "mediaGallery.subtitle": "गावातील सण, विकास कामे आणि सामुदायिक कार्यक्रमांचे फोटो आणि व्हिडिओ पहा.",
+  "mediaGallery.photosTab": "फोटो गॅलरी",
+  "mediaGallery.videosTab": "व्हिडिओ गॅलरी",
+  "mediaGallery.filterAll": "सर्व",
+  "mediaGallery.noPhotosTitle": "फोटो उपलब्ध नाहीत",
+  "mediaGallery.noPhotosText": "गॅलरी फोटो लवकरच अपडेट केले जातील.",
+  "mediaGallery.noVideosTitle": "व्हिडिओ उपलब्ध नाहीत",
+  "mediaGallery.noVideosText": "व्हिडिओ गॅलरी लवकरच अपडेट केली जाईल.",
+  "mediaGallery.seoImageTitle": "फोटो गॅलरी",
+  "mediaGallery.seoVideoTitle": "व्हिडिओ गॅलरी",
+  "mediaGallery.seoDescription": "आपल्या गावाची मीडिया गॅलरी — फोटो आणि व्हिडिओ पहा",
       // Proud People
-"proudPeople.title": "गौरवशाली व्यक्ती",
-"proudPeople.description":
+"proud-peopleWorkers.title": "गौरवशाली व्यक्ती",
+"proud-peopleWorkers.description":
   "आपल्या कर्तृत्व व योगदानातून गावाचा मान वाढवणाऱ्या व्यक्तींचा गौरव",
 
 // आशा सेविका
-"ashaWorkers.title": "आशा सेविका",
-"ashaWorkers.description":
-  "गावातील आरोग्य सेवा व जनजागृतीसाठी समर्पितपणे कार्य करणाऱ्या आशा सेविका",
 
-// अंगणवाडी कार्यकर्त्या
-"anganwadiWorkers.title": "अंगणवाडी कार्यकर्त्या",
-"anganwadiWorkers.description":
-  "बालविकास व महिलांच्या कल्याणासाठी कार्य करणाऱ्या समर्पित अंगणवाडी कार्यकर्त्या",
+  "ashaWorkers.title": "आशा कार्यकर्त्या",
+  "ashaWorkers.description": "आशा (Accredited Social Health Activist) कार्यकर्त्या गाव पातळीवर प्राथमिक आरोग्य सेवा पुरवणे, माता व बाल आरोग्याची काळजी घेणे आणि समुदायाच्या आरोग्य जनजागृतीसाठी कार्य करतात.",
+
+  "anganwadiWorkers.title": "अंगणवाडी सेविका",
+  "anganwadiWorkers.description": "अंगणवाडी सेविका बाल पोषण, पूर्व प्राथमिक शिक्षण, आरोग्य विषयक जनजागृती तसेच महिला व बालकांच्या कल्याणासाठी महत्त्वाची भूमिका बजावतात.",
+
 // विकास कामे
 "developmentWorks.title": "विकास कामे",
 "developmentWorks.description":
