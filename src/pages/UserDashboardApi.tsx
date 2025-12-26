@@ -210,8 +210,8 @@ const UserDashboardApi = () => {
                 <Label>Roles</Label>
                 <div className="flex flex-wrap gap-1">
                   {user?.roles?.map((role) => (
-                    <span key={role} className="px-2 py-1 bg-primary/10 text-primary rounded text-sm">
-                      {role}
+                    <span key={role.id} className="px-2 py-1 bg-primary/10 text-primary rounded text-sm capitalize">
+                      {role.name.replace('_', ' ')}
                     </span>
                   )) || <span className="text-muted-foreground">-</span>}
                 </div>

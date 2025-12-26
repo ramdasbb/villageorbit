@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useCallback } from "react";
-import { authService, UserProfile } from "@/services/authService";
+import { authService, UserProfile, UserRole } from "@/services/authService";
 import { tokenService } from "@/services/tokenService";
 
 export interface UseApiAuthReturn {
@@ -17,6 +17,7 @@ export interface UseApiAuthReturn {
   isSubAdmin: boolean;
   isApproved: boolean;
   permissions: string[];
+  roles: UserRole[];
   hasPermission: (permission: string) => boolean;
   hasAnyPermission: (permissions: string[]) => boolean;
   hasRole: (role: string) => boolean;
@@ -77,16 +78,6 @@ export const useApiAuth = (): UseApiAuthReturn => {
       if (response.success && response.data) {
         setUser(response.data.user);
         return { success: true };
-      }
-      
-      // Check for specific error codes
-      if (response.error?.includes('USER_NOT_APPROVED') || 
-          response.error?.includes('pending') ||
-          response.error?.includes('not approved')) {
-        return { 
-          success: false, 
-          error: 'Your account is pending approval. Please wait for admin approval.' 
-        };
       }
       
       return { success: false, error: response.error || 'Login failed' };
@@ -157,20 +148,21 @@ export const useApiAuth = (): UseApiAuthReturn => {
   }, [user]);
 
   const hasRole = useCallback((role: string) => {
-    return user?.roles?.includes(role) || 
-           user?.roles?.includes(role.toLowerCase()) || 
-           user?.roles?.includes(role.toUpperCase()) || 
-           false;
+    if (!user?.roles) return false;
+    return user.roles.some(r => 
+      r.name.toLowerCase() === role.toLowerCase()
+    );
   }, [user]);
 
   // Computed properties
   const isAuthenticated = !!user && tokenService.hasTokens();
-  const isAdmin = hasRole('admin') || hasRole('ADMIN');
-  const isSuperAdmin = hasRole('super_admin') || hasRole('SUPER_ADMIN');
-  const isGramsevak = hasRole('gramsevak') || hasRole('GRAMSEVAK');
-  const isSubAdmin = hasRole('sub_admin') || hasRole('SUB_ADMIN');
+  const isAdmin = hasRole('admin');
+  const isSuperAdmin = hasRole('super_admin');
+  const isGramsevak = hasRole('gramsevak');
+  const isSubAdmin = hasRole('sub_admin');
   const isApproved = user?.approval_status === 'approved';
   const permissions = user?.permissions || [];
+  const roles = user?.roles || [];
 
   return {
     user,
@@ -182,6 +174,7 @@ export const useApiAuth = (): UseApiAuthReturn => {
     isSubAdmin,
     isApproved,
     permissions,
+    roles,
     hasPermission,
     hasAnyPermission,
     hasRole,
