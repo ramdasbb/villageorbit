@@ -34,6 +34,31 @@ export interface UserListParams {
   search?: string;
 }
 
+// API wrapper response format
+interface ApiWrapperResponse<T> {
+  success: boolean;
+  message: string;
+  data: T;
+  error_code?: string | null;
+}
+
+// Backend response format for users list
+interface BackendUsersResponse {
+  users: Array<{
+    user_id?: string;
+    id?: string;
+    email: string;
+    full_name: string;
+    mobile?: string;
+    approval_status: string;
+    roles?: Array<{ id: string; name: string }>;
+    created_at: string;
+  }>;
+  total: number;
+  page: number;
+  limit: number;
+}
+
 class AdminService {
   /**
    * Get paginated list of users
@@ -51,41 +76,123 @@ class AdminService {
       ? `${apiConfig.endpoints.admin.users}?${queryString}` 
       : apiConfig.endpoints.admin.users;
 
-    return apiClient.get<PaginatedUsers>(endpoint);
+    const response = await apiClient.get<ApiWrapperResponse<BackendUsersResponse>>(endpoint);
+
+    if (response.success && response.data?.data) {
+      const backendData = response.data.data;
+      // Transform backend response to expected format
+      const users: AdminUser[] = backendData.users.map(u => ({
+        id: u.user_id || u.id || '',
+        email: u.email,
+        full_name: u.full_name,
+        mobile: u.mobile || '',
+        approval_status: u.approval_status as 'pending' | 'approved' | 'rejected',
+        roles: u.roles ? u.roles.map(r => r.name) : [],
+        created_at: u.created_at,
+      }));
+
+      return {
+        data: {
+          users,
+          total: backendData.total,
+          page: backendData.page,
+          limit: backendData.limit,
+          totalPages: Math.ceil(backendData.total / backendData.limit),
+        },
+        status: response.status,
+        success: true,
+      };
+    }
+    
+    return {
+      error: response.error || 'Failed to fetch users',
+      status: response.status,
+      success: false,
+    };
   }
 
   /**
    * Get user details by ID
    */
   async getUserById(userId: string): Promise<ApiResponse<AdminUser>> {
-    return apiClient.get<AdminUser>(apiConfig.endpoints.admin.userById(userId));
+    const response = await apiClient.get<ApiWrapperResponse<any>>(
+      apiConfig.endpoints.admin.userById(userId)
+    );
+
+    if (response.success && response.data?.data) {
+      const u = response.data.data;
+      return {
+        data: {
+          id: u.user_id || u.id,
+          email: u.email,
+          full_name: u.full_name,
+          mobile: u.mobile || '',
+          aadhar_number: u.aadhar_number,
+          approval_status: u.approval_status,
+          rejection_reason: u.rejection_reason,
+          roles: u.roles ? u.roles.map((r: any) => r.name) : [],
+          created_at: u.created_at,
+        },
+        status: response.status,
+        success: true,
+      };
+    }
+
+    return {
+      error: response.error || 'Failed to fetch user',
+      status: response.status,
+      success: false,
+    };
   }
 
   /**
    * Approve a user
    */
   async approveUser(userId: string): Promise<ApiResponse<{ message: string }>> {
-    return apiClient.post<{ message: string }>(
+    const response = await apiClient.post<ApiWrapperResponse<any>>(
       apiConfig.endpoints.admin.approveUser(userId),
       {}
     );
+
+    return {
+      data: { message: response.data?.message || 'User approved' },
+      status: response.status,
+      success: response.success,
+      error: response.error,
+    };
   }
 
   /**
    * Reject a user with reason
    */
   async rejectUser(userId: string, reason: string): Promise<ApiResponse<{ message: string }>> {
-    return apiClient.post<{ message: string }>(
+    const response = await apiClient.post<ApiWrapperResponse<any>>(
       apiConfig.endpoints.admin.rejectUser(userId),
-      { reason }
+      { rejection_reason: reason }
     );
+
+    return {
+      data: { message: response.data?.message || 'User rejected' },
+      status: response.status,
+      success: response.success,
+      error: response.error,
+    };
   }
 
   /**
    * Delete (soft delete) a user
    */
   async deleteUser(userId: string): Promise<ApiResponse<{ message: string }>> {
-    return apiClient.delete<{ message: string }>(apiConfig.endpoints.admin.userById(userId));
+    const response = await apiClient.delete<ApiWrapperResponse<any>>(
+      apiConfig.endpoints.admin.userById(userId)
+    );
+
+    return {
+      data: { message: response.data?.message || 'User deleted' },
+      status: response.status,
+      success: response.success,
+      error: response.error,
+    };
   }
 }
 
