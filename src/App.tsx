@@ -17,23 +17,21 @@ const Admin = lazy(() => import("./pages/Admin"));
 const VillageManagement = lazy(() => import("./pages/VillageManagement"));
 const JsonConfigManager = lazy(() => import("./pages/JsonConfigManager"));
 const ContactMessagesAdmin = lazy(() => import("./pages/ContactMessagesAdmin"));
-const UserManagementDashboard = lazy(() => import("./pages/UserManagementDashboard"));
-const UserDashboard = lazy(() => import("./pages/UserDashboard"));
+// Use API-based user management dashboard
+const UserManagementDashboard = lazy(() => import("./pages/UserManagementDashboardApi"));
+// Use API-based user dashboard
+const UserDashboard = lazy(() => import("./pages/UserDashboardApi"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
 const ServicePage = lazy(() => import("./pages/ServicePage"));
 const PanchayatPage = lazy(() => import("./pages/PanchayatPage"));
 const ContactUsPage = lazy(() => import("./pages/ContactUsPage"));
-//const ProudPeoplePage = lazy(() => import("@/pages/ProudPeoplePage"));
 const DocumentsModel = lazy(() => import("./pages/DocumentsModel"));
-
-
 
 const SchemePage = lazy(() => import("./pages/SchemePage"));
 const GovtSchemesPage = lazy(() => import("./pages/GovtSchemesPage"));
 const DevelopmentPage = lazy(() => import("./pages/DevelopmentPage"));
 const MediaGalleryPage = lazy(() => import("./pages/MediaGalleryPage"));
-//const GalleryPage = lazy(() => import("./pages/GalleryPage"));
 const AnnouncementsPage = lazy(() => import("./pages/AnnouncementsPage"));
 const NoticesPage = lazy(() => import("./pages/NoticesPage"));
 const MarketPricesPage = lazy(() => import("./pages/MarketPricesPage"));
@@ -55,6 +53,8 @@ const AddService = lazy(() => import("./pages/AddService"));
 const ManageCategories = lazy(() => import("./pages/ManageCategories"));
 const ServicesAdminDashboard = lazy(() => import("./pages/ServicesAdminDashboard"));
 const NavigationConfigEditor = lazy(() => import("./pages/NavigationConfigEditor"));
+// RBAC Management page for super admins
+const RbacManagement = lazy(() => import("./pages/RbacManagement"));
 
 const queryClient = new QueryClient();
 
@@ -169,10 +169,11 @@ const App = () => (
                   <Route path={CUSTOM_ROUTES.USER_MANAGEMENT} element={<UserManagementDashboard />} />
                   <Route path={CUSTOM_ROUTES.USER_DASHBOARD} element={<UserDashboard />} />
                   <Route path={CUSTOM_ROUTES.ADMIN_MARKETPLACE} element={<AdminMarketplaceDashboard />} />
-            <Route path={CUSTOM_ROUTES.ADD_SERVICE} element={<AddService />} />
-            <Route path={CUSTOM_ROUTES.MANAGE_CATEGORIES} element={<ManageCategories />} />
-            <Route path={CUSTOM_ROUTES.SERVICES_ADMIN} element={<ServicesAdminDashboard />} />
-            <Route path={CUSTOM_ROUTES.NAVIGATION_CONFIG} element={<NavigationConfigEditor />} />
+                  <Route path={CUSTOM_ROUTES.ADD_SERVICE} element={<AddService />} />
+                  <Route path={CUSTOM_ROUTES.MANAGE_CATEGORIES} element={<ManageCategories />} />
+                  <Route path={CUSTOM_ROUTES.SERVICES_ADMIN} element={<ServicesAdminDashboard />} />
+                  <Route path={CUSTOM_ROUTES.NAVIGATION_CONFIG} element={<NavigationConfigEditor />} />
+                  <Route path={CUSTOM_ROUTES.RBAC_MANAGEMENT} element={<RbacManagement />} />
                 </Routes>
               </Layout>
             }
