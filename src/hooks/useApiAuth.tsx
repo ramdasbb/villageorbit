@@ -150,7 +150,7 @@ export const useApiAuth = (): UseApiAuthReturn => {
   const hasRole = useCallback((role: string) => {
     if (!user?.roles) return false;
     return user.roles.some(r => 
-      r.name.toLowerCase() === role.toLowerCase()
+      r.name?.toLowerCase() === role.toLowerCase()
     );
   }, [user]);
 
