@@ -1,11 +1,13 @@
 /**
  * API-based Auth Hook
  * Replaces Supabase auth with REST API authentication
+ * Optimized with memoization and stable callbacks
  */
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { authService, UserProfile, UserRole } from "@/services/authService";
 import { tokenService } from "@/services/tokenService";
+import { ROLES } from "@/lib/constants";
 
 export interface UseApiAuthReturn {
   user: UserProfile | null;
@@ -22,52 +24,71 @@ export interface UseApiAuthReturn {
   hasAnyPermission: (permissions: string[]) => boolean;
   hasRole: (role: string) => boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  signup: (data: {
-    email: string;
-    password: string;
-    full_name: string;
-    mobile: string;
-    aadhar_number?: string;
-  }) => Promise<{ success: boolean; error?: string; message?: string }>;
+  signup: (data: SignupData) => Promise<{ success: boolean; error?: string; message?: string }>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
 
+interface SignupData {
+  email: string;
+  password: string;
+  full_name: string;
+  mobile: string;
+  aadhar_number?: string;
+}
+
+// Pre-lowercase role names for faster comparison
+const ROLE_ADMIN = ROLES.ADMIN.toLowerCase();
+const ROLE_SUPER_ADMIN = ROLES.SUPER_ADMIN.toLowerCase();
+const ROLE_GRAMSEVAK = ROLES.GRAMSEVAK.toLowerCase();
+const ROLE_SUB_ADMIN = ROLES.SUB_ADMIN.toLowerCase();
+
 export const useApiAuth = (): UseApiAuthReturn => {
-  const [user, setUser] = useState<UserProfile | null>(null);
+  const [user, setUser] = useState<UserProfile | null>(() => {
+    // Initialize from cache synchronously to prevent flash
+    return authService.getCachedUser();
+  });
   const [loading, setLoading] = useState(true);
 
   // Load user on mount
   useEffect(() => {
+    let mounted = true;
+
     const initAuth = async () => {
       try {
-        // Check for cached user first
-        const cachedUser = authService.getCachedUser();
-        if (cachedUser) {
-          setUser(cachedUser);
-        }
-
         // If we have tokens, fetch fresh user data
         if (tokenService.hasTokens()) {
           const response = await authService.getCurrentUser();
-          if (response.success && response.data) {
-            setUser(response.data);
-          } else {
-            // Token invalid, clear everything
-            tokenService.clearTokens();
-            setUser(null);
+          if (mounted) {
+            if (response.success && response.data) {
+              setUser(response.data);
+            } else {
+              // Token invalid, clear everything
+              tokenService.clearTokens();
+              setUser(null);
+            }
           }
+        } else if (mounted) {
+          setUser(null);
         }
       } catch (error) {
         console.error("Error initializing auth:", error);
-        tokenService.clearTokens();
-        setUser(null);
+        if (mounted) {
+          tokenService.clearTokens();
+          setUser(null);
+        }
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
 
     initAuth();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
@@ -89,13 +110,7 @@ export const useApiAuth = (): UseApiAuthReturn => {
     }
   }, []);
 
-  const signup = useCallback(async (data: {
-    email: string;
-    password: string;
-    full_name: string;
-    mobile: string;
-    aadhar_number?: string;
-  }) => {
+  const signup = useCallback(async (data: SignupData) => {
     setLoading(true);
     try {
       const response = await authService.signup(data);
@@ -139,42 +154,45 @@ export const useApiAuth = (): UseApiAuthReturn => {
     }
   }, []);
 
+  // Memoized role lookup set for O(1) access
+  const roleNamesLower = useMemo(() => {
+    if (!user?.roles) return new Set<string>();
+    return new Set(user.roles.map(r => r.name?.toLowerCase() ?? ''));
+  }, [user?.roles]);
+
+  // Memoized permissions set for O(1) access
+  const permissionsSet = useMemo(() => {
+    return new Set(user?.permissions ?? []);
+  }, [user?.permissions]);
+
   const hasPermission = useCallback((permission: string) => {
-    return user?.permissions?.includes(permission) || false;
-  }, [user]);
+    return permissionsSet.has(permission);
+  }, [permissionsSet]);
 
   const hasAnyPermission = useCallback((permissions: string[]) => {
-    return permissions.some(p => user?.permissions?.includes(p));
-  }, [user]);
+    return permissions.some(p => permissionsSet.has(p));
+  }, [permissionsSet]);
 
   const hasRole = useCallback((role: string) => {
-    if (!user?.roles) return false;
-    return user.roles.some(r => 
-      r.name?.toLowerCase() === role.toLowerCase()
-    );
-  }, [user]);
+    return roleNamesLower.has(role.toLowerCase());
+  }, [roleNamesLower]);
 
-  // Computed properties
-  const isAuthenticated = !!user && tokenService.hasTokens();
-  const isAdmin = hasRole('admin');
-  const isSuperAdmin = hasRole('super_admin');
-  const isGramsevak = hasRole('gramsevak');
-  const isSubAdmin = hasRole('sub_admin');
-  const isApproved = user?.approval_status === 'approved';
-  const permissions = user?.permissions || [];
-  const roles = user?.roles || [];
+  // Computed properties - memoized to prevent recalculation
+  const computedValues = useMemo(() => ({
+    isAuthenticated: !!user && tokenService.hasTokens(),
+    isAdmin: roleNamesLower.has(ROLE_ADMIN),
+    isSuperAdmin: roleNamesLower.has(ROLE_SUPER_ADMIN),
+    isGramsevak: roleNamesLower.has(ROLE_GRAMSEVAK),
+    isSubAdmin: roleNamesLower.has(ROLE_SUB_ADMIN),
+    isApproved: user?.approval_status === 'approved',
+    permissions: user?.permissions ?? [],
+    roles: user?.roles ?? [],
+  }), [user, roleNamesLower]);
 
   return {
     user,
     loading,
-    isAuthenticated,
-    isAdmin,
-    isSuperAdmin,
-    isGramsevak,
-    isSubAdmin,
-    isApproved,
-    permissions,
-    roles,
+    ...computedValues,
     hasPermission,
     hasAnyPermission,
     hasRole,
