@@ -20,7 +20,7 @@ export interface Role {
   name: string;
   description?: string;
   isSystemRole: boolean;
-  permissions: string[];
+  permissions: Array<{ id: string; name: string }>;
   createdAt?: string;
 }
 

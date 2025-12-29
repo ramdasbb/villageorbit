@@ -53,14 +53,14 @@ export default function SellerDashboard() {
   }, [authLoading, user, navigate]);
 
   const fetchSellerItems = async () => {
-    if (!user?.id) return;
+    if (!user?.userId) return;
     
     try {
       setLoading(true);
       const { data, error } = await supabase
         .from("items")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("user_id", user.userId)
         .order("created_at", { ascending: false });
 
       if (error) throw error;

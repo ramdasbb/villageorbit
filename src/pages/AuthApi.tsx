@@ -134,9 +134,9 @@ const AuthApi = () => {
       const result = await signup({
         email,
         password,
-        full_name: fullName,
+        fullName,
         mobile,
-        aadhar_number: aadharNumber,
+        aadharNumber,
       });
 
       if (result.success) {
