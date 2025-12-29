@@ -63,7 +63,7 @@ const ExamDashboard = () => {
   useEffect(() => {
     if (authLoading) return;
     
-    if (!isAuthenticated || !user?.id) {
+    if (!isAuthenticated || !user?.userId) {
       toast({
         title: "Authentication Required",
         description: "Please login to access the exam system",
@@ -73,12 +73,12 @@ const ExamDashboard = () => {
       return;
     }
     
-    fetchData(user.id);
+    fetchData(user.userId);
     
     // Check for upcoming exams and set up notifications
-    checkUpcomingExams(user.id);
+    checkUpcomingExams(user.userId);
     const setupReminders = async () => {
-      const channel = await subscribeToExamReminders(user.id);
+      const channel = await subscribeToExamReminders(user.userId);
       return () => {
         supabase.removeChannel(channel);
       };

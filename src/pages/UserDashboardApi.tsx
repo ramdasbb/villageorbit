@@ -31,7 +31,7 @@ const UserDashboardApi = () => {
 
   const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState({
-    full_name: '',
+    fullName: '',
     mobile: '',
   });
 
@@ -46,7 +46,7 @@ const UserDashboardApi = () => {
   useEffect(() => {
     if (user) {
       setFormData({
-        full_name: user.full_name || '',
+        fullName: user.fullName || '',
         mobile: user.mobile || '',
       });
     }
@@ -135,11 +135,11 @@ const UserDashboardApi = () => {
             <div className="flex items-center gap-4">
               <Avatar className="h-16 w-16">
                 <AvatarFallback className="text-lg">
-                  {user?.full_name?.charAt(0)?.toUpperCase() || 'U'}
+                  {user?.fullName?.charAt(0)?.toUpperCase() || 'U'}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <h1 className="text-2xl font-bold">Welcome, {user?.full_name || 'User'}!</h1>
+                <h1 className="text-2xl font-bold">Welcome, {user?.fullName || 'User'}!</h1>
                 <p className="text-muted-foreground">{user?.email}</p>
               </div>
             </div>
@@ -174,11 +174,11 @@ const UserDashboardApi = () => {
                 <Label>Full Name</Label>
                 {editing ? (
                   <Input
-                    value={formData.full_name}
-                    onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                    value={formData.fullName}
+                    onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                   />
                 ) : (
-                  <p className="text-muted-foreground">{user?.full_name || '-'}</p>
+                  <p className="text-muted-foreground">{user?.fullName || '-'}</p>
                 )}
               </div>
               <div className="space-y-2">
@@ -199,7 +199,7 @@ const UserDashboardApi = () => {
               <div className="space-y-2">
                 <Label>Aadhar Number</Label>
                 <p className="text-muted-foreground">
-                  {user?.aadhar_number ? `XXXX-XXXX-${user.aadhar_number.slice(-4)}` : '-'}
+                  {user?.aadharNumber ? `XXXX-XXXX-${user.aadharNumber.slice(-4)}` : '-'}
                 </p>
               </div>
               <div className="space-y-2">

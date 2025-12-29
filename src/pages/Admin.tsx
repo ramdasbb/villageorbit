@@ -74,7 +74,7 @@ const Admin = () => {
         .update({
           is_visible: !currentVisibility,
           updated_at: new Date().toISOString(),
-          updated_by: user?.id,
+          updated_by: user?.userId,
         })
         .eq("id", pageId);
 

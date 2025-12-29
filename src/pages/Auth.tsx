@@ -29,7 +29,7 @@ const Auth = () => {
       // Redirect based on role
       if (isSuperAdmin || isAdmin || isSubAdmin) {
         navigate("/admin");
-      } else if (user.approval_status === 'approved') {
+      } else if (user.approvalStatus === 'APPROVED') {
         navigate("/my-dashboard");
       } else {
         navigate("/");
@@ -114,9 +114,9 @@ const Auth = () => {
       const result = await signup({
         email,
         password,
-        full_name: fullName,
+        fullName,
         mobile,
-        aadhar_number: aadharNumber,
+        aadharNumber,
       });
 
       if (result.success) {

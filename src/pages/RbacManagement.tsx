@@ -94,7 +94,7 @@ const RbacManagement = () => {
       const [rolesRes, permissionsRes, usersRes] = await Promise.all([
         rbacService.getRoles(),
         rbacService.getPermissions(),
-        adminService.getUsers({ limit: 100 }),
+        adminService.getUsers({ size: 100 }),
       ]);
 
       if (rolesRes.success && rolesRes.data) {
@@ -104,7 +104,7 @@ const RbacManagement = () => {
         setPermissions(permissionsRes.data);
       }
       if (usersRes.success && usersRes.data) {
-        setUsers(usersRes.data.users);
+        setUsers(usersRes.data.content);
       }
     } catch (error) {
       console.error("Error fetching RBAC data:", error);
@@ -277,7 +277,7 @@ const RbacManagement = () => {
 
     setActionLoading(true);
     try {
-      const response = await rbacService.assignRolesToUser(selectedUser.id, selectedRoleIds);
+      const response = await rbacService.assignRolesToUser(selectedUser.userId, selectedRoleIds);
       if (response.success) {
         toast({ title: "Success", description: "Roles assigned to user" });
         setAssignRolesOpen(false);
@@ -427,7 +427,7 @@ const RbacManagement = () => {
                         <TableCell className="font-medium">{role.name}</TableCell>
                         <TableCell className="text-muted-foreground">{role.description || "-"}</TableCell>
                         <TableCell>
-                          {role.is_system_role ? (
+                          {role.isSystemRole ? (
                             <Badge variant="secondary">System</Badge>
                           ) : (
                             <Badge variant="outline">Custom</Badge>
@@ -469,7 +469,7 @@ const RbacManagement = () => {
                             >
                               <Key className="h-4 w-4" />
                             </Button>
-                            {!role.is_system_role && (
+                            {!role.isSystemRole && (
                               <Button
                                 size="sm"
                                 variant="outline"
@@ -553,7 +553,7 @@ const RbacManagement = () => {
                         <TableCell className="font-medium font-mono text-sm">{permission.name}</TableCell>
                         <TableCell className="text-muted-foreground">{permission.description || "-"}</TableCell>
                         <TableCell className="text-sm text-muted-foreground">
-                          {new Date(permission.created_at).toLocaleDateString()}
+                          {new Date(permission.createdAt).toLocaleDateString()}
                         </TableCell>
                         <TableCell className="text-right">
                           <Button
@@ -594,15 +594,15 @@ const RbacManagement = () => {
                   </TableHeader>
                   <TableBody>
                     {users.map((user) => (
-                      <TableRow key={user.id}>
-                        <TableCell className="font-medium">{user.full_name}</TableCell>
+                      <TableRow key={user.userId}>
+                        <TableCell className="font-medium">{user.fullName}</TableCell>
                         <TableCell>{user.email}</TableCell>
                         <TableCell>
                           <div className="flex flex-wrap gap-1">
                             {user.roles.length > 0 ? (
                               user.roles.map((role) => (
-                                <Badge key={role} variant="outline" className="text-xs">
-                                  {role}
+                                <Badge key={role.id} variant="outline" className="text-xs">
+                                  {role.name}
                                 </Badge>
                               ))
                             ) : (
@@ -611,8 +611,8 @@ const RbacManagement = () => {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant={user.approval_status === 'approved' ? 'default' : 'secondary'}>
-                            {user.approval_status}
+                          <Badge variant={user.approvalStatus === 'APPROVED' ? 'default' : 'secondary'}>
+                            {user.approvalStatus}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
@@ -622,7 +622,7 @@ const RbacManagement = () => {
                             onClick={() => {
                               setSelectedUser(user);
                               setSelectedRoleIds(user.roles.map(r => 
-                                roles.find(role => role.name === r)?.id || ''
+                                roles.find(role => role.name === r.name)?.id || ''
                               ).filter(Boolean));
                               setAssignRolesOpen(true);
                             }}
@@ -685,7 +685,7 @@ const RbacManagement = () => {
         <Dialog open={assignRolesOpen} onOpenChange={setAssignRolesOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Assign Roles to {selectedUser?.full_name}</DialogTitle>
+              <DialogTitle>Assign Roles to {selectedUser?.fullName}</DialogTitle>
               <DialogDescription>Select roles for this user</DialogDescription>
             </DialogHeader>
             <div className="space-y-2">

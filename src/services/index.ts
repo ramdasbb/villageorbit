@@ -58,3 +58,9 @@ export type {
   FeedbackListParams,
   PaginatedFeedback,
 } from './feedbackService';
+
+export { userProfileService } from './userProfileService';
+export type {
+  UserProfile as UserProfileData,
+  UpdateProfileRequest,
+} from './userProfileService';
