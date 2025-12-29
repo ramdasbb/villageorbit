@@ -73,13 +73,13 @@ const UserManagementDashboardApi = () => {
     try {
       const response = await adminService.getUsers({
         page: currentPage - 1, // API uses 0-indexed pages
-        limit: 20,
-        approval_status: statusFilter !== 'all' ? statusFilter as any : undefined,
+        size: 20,
+        approvalStatus: statusFilter !== 'all' ? statusFilter.toUpperCase() as any : undefined,
         search: searchTerm || undefined,
       });
 
       if (response.success && response.data) {
-        setUsers(response.data.users);
+        setUsers(response.data.content);
         setTotalPages(response.data.totalPages);
       } else {
         toast({
@@ -242,11 +242,11 @@ const UserManagementDashboardApi = () => {
       ["Email", "Name", "Mobile", "Status", "Roles", "Created At"],
       ...users.map(user => [
         user.email,
-        user.full_name,
-        user.mobile,
-        user.approval_status,
-        user.roles.join(", "),
-        user.created_at,
+        user.fullName,
+        user.mobile || '',
+        user.approvalStatus,
+        user.roles.map(r => r.name).join(", "),
+        user.createdAt,
       ])
     ].map(row => row.join(",")).join("\n");
 
@@ -260,7 +260,7 @@ const UserManagementDashboardApi = () => {
   };
 
   const getStatusBadge = (status: string) => {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case 'approved':
         return <Badge className="bg-green-500 hover:bg-green-600">Approved</Badge>;
       case 'rejected':
@@ -364,22 +364,22 @@ const UserManagementDashboardApi = () => {
                 </TableHeader>
                 <TableBody>
                   {users.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell className="font-medium">{user.full_name}</TableCell>
+                    <TableRow key={user.userId}>
+                      <TableCell className="font-medium">{user.fullName}</TableCell>
                       <TableCell>{user.email}</TableCell>
                       <TableCell>{user.mobile}</TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1">
                           {user.roles.map((role) => (
-                            <Badge key={role} variant="outline" className="text-xs">
-                              {role}
+                            <Badge key={role.id} variant="outline" className="text-xs">
+                              {role.name}
                             </Badge>
                           ))}
                         </div>
                       </TableCell>
-                      <TableCell>{getStatusBadge(user.approval_status)}</TableCell>
+                      <TableCell>{getStatusBadge(user.approvalStatus)}</TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {format(new Date(user.created_at), "dd MMM yyyy")}
+                        {format(new Date(user.createdAt), "dd MMM yyyy")}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
@@ -387,13 +387,13 @@ const UserManagementDashboardApi = () => {
                             permissions={['users:approve']} 
                             roles={['admin', 'ADMIN', 'super_admin', 'SUPER_ADMIN']}
                           >
-                            {user.approval_status === 'pending' && (
+                            {user.approvalStatus === 'PENDING' && (
                               <>
                                 <Button
                                   size="sm"
                                   variant="outline"
                                   className="text-green-600 hover:text-green-700"
-                                  onClick={() => handleApprove(user.id)}
+                                  onClick={() => handleApprove(user.userId)}
                                   disabled={actionLoading}
                                 >
                                   <Check className="h-4 w-4" />
@@ -403,7 +403,7 @@ const UserManagementDashboardApi = () => {
                                   variant="outline"
                                   className="text-destructive hover:text-destructive"
                                   onClick={() => {
-                                    setSelectedUserId(user.id);
+                                    setSelectedUserId(user.userId);
                                     setRejectDialogOpen(true);
                                   }}
                                   disabled={actionLoading}
@@ -421,7 +421,7 @@ const UserManagementDashboardApi = () => {
                               size="sm"
                               variant="outline"
                               className="text-destructive hover:text-destructive"
-                              onClick={() => handleDelete(user.id)}
+                              onClick={() => handleDelete(user.userId)}
                               disabled={actionLoading}
                             >
                               <Trash2 className="h-4 w-4" />
@@ -484,9 +484,9 @@ const UserManagementDashboardApi = () => {
               <Button 
                 variant="destructive" 
                 onClick={handleReject}
-                disabled={!rejectionReason.trim() || actionLoading}
+                disabled={actionLoading || !rejectionReason.trim()}
               >
-                {actionLoading ? "Rejecting..." : "Reject User"}
+                Reject User
               </Button>
             </DialogFooter>
           </DialogContent>

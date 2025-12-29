@@ -32,9 +32,9 @@ export interface UseApiAuthReturn {
 interface SignupData {
   email: string;
   password: string;
-  full_name: string;
+  fullName: string;
   mobile: string;
-  aadhar_number?: string;
+  aadharNumber?: string;
 }
 
 // Pre-lowercase role names for faster comparison
@@ -113,7 +113,13 @@ export const useApiAuth = (): UseApiAuthReturn => {
   const signup = useCallback(async (data: SignupData) => {
     setLoading(true);
     try {
-      const response = await authService.signup(data);
+      const response = await authService.signup({
+        email: data.email,
+        password: data.password,
+        fullName: data.fullName,
+        mobile: data.mobile,
+        aadharNumber: data.aadharNumber,
+      });
       
       if (response.success) {
         return { 
@@ -162,8 +168,8 @@ export const useApiAuth = (): UseApiAuthReturn => {
 
   // Memoized permissions set for O(1) access
   const permissionsSet = useMemo(() => {
-    return new Set(user?.permissions ?? []);
-  }, [user?.permissions]);
+    return new Set(user?.allPermissions ?? []);
+  }, [user?.allPermissions]);
 
   const hasPermission = useCallback((permission: string) => {
     return permissionsSet.has(permission);
@@ -184,8 +190,8 @@ export const useApiAuth = (): UseApiAuthReturn => {
     isSuperAdmin: roleNamesLower.has(ROLE_SUPER_ADMIN),
     isGramsevak: roleNamesLower.has(ROLE_GRAMSEVAK),
     isSubAdmin: roleNamesLower.has(ROLE_SUB_ADMIN),
-    isApproved: user?.approval_status === 'approved',
-    permissions: user?.permissions ?? [],
+    isApproved: user?.approvalStatus === 'APPROVED',
+    permissions: user?.allPermissions ?? [],
     roles: user?.roles ?? [],
   }), [user, roleNamesLower]);
 

@@ -1,18 +1,19 @@
 /**
  * Authentication Service
- * Handles all auth-related API calls
+ * Handles all auth-related API calls based on VillageOrbit API Documentation
  */
 
 import { apiClient, ApiResponse } from './apiClient';
 import { tokenService } from './tokenService';
-import { apiConfig } from '@/config/apiConfig';
+import { apiConfig, getDefaultVillageId } from '@/config/apiConfig';
 
 export interface SignupRequest {
   email: string;
   password: string;
-  full_name: string;
-  mobile: string;
-  aadhar_number?: string;
+  fullName: string;
+  mobile?: string;
+  aadharNumber?: string;
+  villageId?: string;
 }
 
 export interface LoginRequest {
@@ -21,37 +22,41 @@ export interface LoginRequest {
 }
 
 export interface AuthTokens {
-  access_token: string;
-  refresh_token: string;
-  expires_in: number;
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
 }
 
 export interface UserRole {
   id: string;
   name: string;
   description?: string;
+  permissions?: Array<{ id: string; name: string }>;
 }
 
 export interface UserProfile {
-  id: string;
+  userId: string;
   email: string;
-  full_name: string;
-  mobile: string;
-  aadhar_number?: string;
-  approval_status: 'pending' | 'approved' | 'rejected';
-  is_active: boolean;
+  fullName: string;
+  mobile?: string;
+  aadharNumber?: string;
+  approvalStatus: 'PENDING' | 'APPROVED' | 'REJECTED';
+  villageId?: string;
+  isActive: boolean;
   roles: UserRole[];
-  permissions: string[];
-  created_at: string;
-  approved_at?: string;
-  approved_by_user_id?: string | null;
+  allPermissions: string[];
+  createdAt: string;
+  approvedAt?: string;
 }
 
-export interface LoginResponseData extends AuthTokens {
+export interface LoginResponseData {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
   user: {
-    user_id: string;
+    userId: string;
     email: string;
-    full_name: string;
+    fullName: string;
     roles: UserRole[];
     permissions: string[];
   };
@@ -62,12 +67,15 @@ export interface AuthError {
   message: string;
 }
 
-// API wrapper response format
+// API wrapper response format from VillageOrbit API
 interface ApiWrapperResponse<T> {
   success: boolean;
   message: string;
   data: T;
-  error_code?: string | null;
+  error?: {
+    code: string;
+    message: string;
+  };
 }
 
 class AuthService {
@@ -75,23 +83,32 @@ class AuthService {
    * Register a new user
    * On success, user must wait for admin approval
    */
-  async signup(data: SignupRequest): Promise<ApiResponse<{ message: string; user_id?: string }>> {
-    const response = await apiClient.post<ApiWrapperResponse<{ user_id: string; email: string; approval_status: string }>>(
+  async signup(data: SignupRequest): Promise<ApiResponse<{ message: string; userId?: string }>> {
+    const payload = {
+      email: data.email,
+      password: data.password,
+      fullName: data.fullName,
+      mobile: data.mobile,
+      aadharNumber: data.aadharNumber,
+      villageId: data.villageId || getDefaultVillageId(),
+    };
+
+    const response = await apiClient.post<ApiWrapperResponse<{ userId: string; email: string; approvalStatus: string }>>(
       apiConfig.endpoints.auth.signup,
-      data,
+      payload,
       false // No auth required for signup
     );
 
     if (response.success && response.data) {
       return {
-        data: { message: response.data.message, user_id: response.data.data?.user_id },
+        data: { message: response.data.message, userId: response.data.data?.userId },
         status: response.status,
         success: true,
       };
     }
 
     return {
-      error: response.error || 'Signup failed',
+      error: response.data?.error?.message || response.error || 'Signup failed',
       status: response.status,
       success: false,
     };
@@ -111,24 +128,24 @@ class AuthService {
     if (response.success && response.data?.data) {
       const loginData = response.data.data;
       
-      // Store tokens
-      tokenService.setTokens(loginData.access_token, loginData.refresh_token);
+      // Store tokens (using camelCase from new API)
+      tokenService.setTokens(loginData.accessToken, loginData.refreshToken);
       
       // Transform user data to UserProfile format
       const userProfile: UserProfile = {
-        id: loginData.user.user_id,
+        userId: loginData.user.userId,
         email: loginData.user.email,
-        full_name: loginData.user.full_name,
+        fullName: loginData.user.fullName,
         mobile: '',
-        approval_status: 'approved',
-        is_active: true,
+        approvalStatus: 'APPROVED',
+        isActive: true,
         roles: loginData.user.roles,
-        permissions: loginData.user.permissions,
-        created_at: new Date().toISOString(),
+        allPermissions: loginData.user.permissions,
+        createdAt: new Date().toISOString(),
       };
       
       // Store user data
-      tokenService.setUserData(userProfile);
+      tokenService.setUserData(userProfile as any);
 
       return {
         data: { user: userProfile },
@@ -137,12 +154,12 @@ class AuthService {
       };
     }
 
-    // Check for USER_NOT_APPROVED error
-    const errorCode = response.data?.error_code;
-    if (errorCode === 'USER_NOT_APPROVED') {
+    // Check for error codes
+    const errorCode = response.data?.error?.code;
+    if (errorCode === 'USER_NOT_APPROVED' || errorCode === 'AUTH_FAILED') {
       return {
-        error: 'Your account is pending approval. Please wait for admin approval.',
-        status: 403,
+        error: response.data?.error?.message || 'Authentication failed',
+        status: response.status || 401,
         success: false,
       };
     }
@@ -155,14 +172,59 @@ class AuthService {
   }
 
   /**
+   * Refresh access token using refresh token
+   */
+  async refreshToken(): Promise<ApiResponse<{ accessToken: string; expiresIn: number }>> {
+    const refreshToken = tokenService.getRefreshToken();
+    if (!refreshToken) {
+      return {
+        error: 'No refresh token available',
+        status: 401,
+        success: false,
+      };
+    }
+
+    const response = await apiClient.post<ApiWrapperResponse<{ accessToken: string; expiresIn: number }>>(
+      apiConfig.endpoints.auth.refreshToken,
+      { refreshToken },
+      false
+    );
+
+    if (response.success && response.data?.data) {
+      const { accessToken, expiresIn } = response.data.data;
+      tokenService.setAccessToken(accessToken);
+      
+      return {
+        data: { accessToken, expiresIn },
+        status: response.status,
+        success: true,
+      };
+    }
+
+    // Token refresh failed, clear tokens
+    tokenService.clearTokens();
+    
+    return {
+      error: response.data?.error?.message || 'Token refresh failed',
+      status: response.status,
+      success: false,
+    };
+  }
+
+  /**
    * Logout user
    * Clears all tokens and user data
    */
   async logout(): Promise<void> {
     try {
       const refreshToken = tokenService.getRefreshToken();
-      // Call logout endpoint (optional - may fail if token is already expired)
-      await apiClient.post(apiConfig.endpoints.auth.logout, { refresh_token: refreshToken }, true);
+      if (refreshToken) {
+        await apiClient.post(
+          apiConfig.endpoints.auth.logout,
+          { refreshToken },
+          true
+        );
+      }
     } catch (error) {
       console.warn('Logout API call failed:', error);
     } finally {
@@ -190,7 +252,7 @@ class AuthService {
     if (response.success && response.data?.data) {
       const userData = response.data.data;
       // Update stored user data
-      tokenService.setUserData(userData);
+      tokenService.setUserData(userData as any);
       
       return {
         data: userData,
@@ -200,7 +262,7 @@ class AuthService {
     }
 
     return {
-      error: response.error || 'Failed to fetch user profile',
+      error: response.data?.error?.message || response.error || 'Failed to fetch user profile',
       status: response.status,
       success: false,
     };
@@ -217,7 +279,23 @@ class AuthService {
    * Get cached user data (without API call)
    */
   getCachedUser(): UserProfile | null {
-    return tokenService.getUserData();
+    const userData = tokenService.getUserData();
+    if (!userData) return null;
+    
+    // Transform snake_case to camelCase if needed
+    return {
+      userId: (userData as any).userId || (userData as any).user_id || (userData as any).id,
+      email: userData.email,
+      fullName: (userData as any).fullName || (userData as any).full_name,
+      mobile: userData.mobile,
+      aadharNumber: (userData as any).aadharNumber || (userData as any).aadhar_number,
+      approvalStatus: ((userData as any).approvalStatus || (userData as any).approval_status || 'PENDING').toUpperCase(),
+      villageId: (userData as any).villageId || (userData as any).village_id,
+      isActive: (userData as any).isActive ?? (userData as any).is_active ?? true,
+      roles: userData.roles || [],
+      allPermissions: (userData as any).allPermissions || (userData as any).permissions || [],
+      createdAt: (userData as any).createdAt || (userData as any).created_at,
+    };
   }
 
   /**
@@ -236,7 +314,7 @@ class AuthService {
    */
   hasPermission(permission: string): boolean {
     const user = this.getCachedUser();
-    return user?.permissions?.includes(permission) || false;
+    return user?.allPermissions?.includes(permission) || false;
   }
 
   /**
@@ -272,7 +350,7 @@ class AuthService {
    */
   isApproved(): boolean {
     const user = this.getCachedUser();
-    return user?.approval_status === 'approved';
+    return user?.approvalStatus === 'APPROVED';
   }
 
   /**

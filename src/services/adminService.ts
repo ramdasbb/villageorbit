@@ -1,36 +1,40 @@
 /**
  * Admin Service
  * Handles admin-related API calls for user management
+ * Based on VillageOrbit API Documentation
  */
 
 import { apiClient, ApiResponse } from './apiClient';
-import { apiConfig } from '@/config/apiConfig';
+import { apiConfig, getDefaultVillageId } from '@/config/apiConfig';
 
 export interface AdminUser {
-  id: string;
+  userId: string;
   email: string;
-  full_name: string;
-  mobile: string;
-  aadhar_number?: string;
-  approval_status: 'pending' | 'approved' | 'rejected';
-  rejection_reason?: string;
-  roles: string[];
-  created_at: string;
-  updated_at?: string;
+  fullName: string;
+  mobile?: string;
+  aadharNumber?: string;
+  approvalStatus: 'PENDING' | 'APPROVED' | 'REJECTED';
+  rejectionReason?: string;
+  villageId?: string;
+  isActive: boolean;
+  roles: Array<{ id: string; name: string }>;
+  createdAt: string;
+  updatedAt?: string;
 }
 
 export interface PaginatedUsers {
-  users: AdminUser[];
-  total: number;
-  page: number;
-  limit: number;
+  content: AdminUser[];
+  totalElements: number;
   totalPages: number;
+  number: number;
+  size: number;
 }
 
 export interface UserListParams {
+  villageId?: string;
   page?: number;
-  limit?: number;
-  approval_status?: 'pending' | 'approved' | 'rejected';
+  size?: number;
+  approvalStatus?: 'PENDING' | 'APPROVED' | 'REJECTED';
   search?: string;
 }
 
@@ -39,24 +43,29 @@ interface ApiWrapperResponse<T> {
   success: boolean;
   message: string;
   data: T;
-  error_code?: string | null;
+  error?: {
+    code: string;
+    message: string;
+  };
 }
 
 // Backend response format for users list
 interface BackendUsersResponse {
-  users: Array<{
-    user_id?: string;
-    id?: string;
+  content: Array<{
+    userId: string;
     email: string;
-    full_name: string;
+    fullName: string;
     mobile?: string;
-    approval_status: string;
+    approvalStatus: string;
+    villageId?: string;
+    isActive: boolean;
     roles?: Array<{ id: string; name: string }>;
-    created_at: string;
+    createdAt: string;
   }>;
-  total: number;
-  page: number;
-  limit: number;
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
 }
 
 class AdminService {
@@ -66,10 +75,11 @@ class AdminService {
   async getUsers(params: UserListParams = {}): Promise<ApiResponse<PaginatedUsers>> {
     const queryParams = new URLSearchParams();
     
-    // Page is 0-indexed on the backend
+    // Add query parameters
+    queryParams.append('villageId', params.villageId || getDefaultVillageId());
     queryParams.append('page', (params.page ?? 0).toString());
-    queryParams.append('limit', (params.limit ?? 20).toString());
-    if (params.approval_status) queryParams.append('approval_status', params.approval_status);
+    queryParams.append('size', (params.size ?? 20).toString());
+    if (params.approvalStatus) queryParams.append('approvalStatus', params.approvalStatus);
     if (params.search) queryParams.append('search', params.search);
 
     const queryString = queryParams.toString();
@@ -79,24 +89,27 @@ class AdminService {
 
     if (response.success && response.data?.data) {
       const backendData = response.data.data;
+      
       // Transform backend response to expected format
-      const users: AdminUser[] = backendData.users.map(u => ({
-        id: u.user_id || u.id || '',
+      const users: AdminUser[] = backendData.content.map(u => ({
+        userId: u.userId,
         email: u.email,
-        full_name: u.full_name,
-        mobile: u.mobile || '',
-        approval_status: u.approval_status as 'pending' | 'approved' | 'rejected',
-        roles: u.roles ? u.roles.map(r => r.name) : [],
-        created_at: u.created_at,
+        fullName: u.fullName,
+        mobile: u.mobile,
+        approvalStatus: u.approvalStatus as 'PENDING' | 'APPROVED' | 'REJECTED',
+        villageId: u.villageId,
+        isActive: u.isActive,
+        roles: u.roles || [],
+        createdAt: u.createdAt,
       }));
 
       return {
         data: {
-          users,
-          total: backendData.total,
-          page: backendData.page,
-          limit: backendData.limit,
-          totalPages: Math.ceil(backendData.total / backendData.limit),
+          content: users,
+          totalElements: backendData.totalElements,
+          totalPages: backendData.totalPages,
+          number: backendData.number,
+          size: backendData.size,
         },
         status: response.status,
         success: true,
@@ -104,7 +117,7 @@ class AdminService {
     }
     
     return {
-      error: response.error || 'Failed to fetch users',
+      error: response.data?.error?.message || response.error || 'Failed to fetch users',
       status: response.status,
       success: false,
     };
@@ -113,24 +126,28 @@ class AdminService {
   /**
    * Get user details by ID
    */
-  async getUserById(userId: string): Promise<ApiResponse<AdminUser>> {
-    const response = await apiClient.get<ApiWrapperResponse<any>>(
-      apiConfig.endpoints.admin.userById(userId)
-    );
+  async getUserById(userId: string, villageId?: string): Promise<ApiResponse<AdminUser>> {
+    const queryParams = new URLSearchParams();
+    queryParams.append('villageId', villageId || getDefaultVillageId());
+    
+    const endpoint = `${apiConfig.endpoints.admin.userById(userId)}?${queryParams.toString()}`;
+    const response = await apiClient.get<ApiWrapperResponse<any>>(endpoint);
 
     if (response.success && response.data?.data) {
       const u = response.data.data;
       return {
         data: {
-          id: u.user_id || u.id,
+          userId: u.userId,
           email: u.email,
-          full_name: u.full_name,
-          mobile: u.mobile || '',
-          aadhar_number: u.aadhar_number,
-          approval_status: u.approval_status,
-          rejection_reason: u.rejection_reason,
-          roles: u.roles ? u.roles.map((r: any) => r.name) : [],
-          created_at: u.created_at,
+          fullName: u.fullName,
+          mobile: u.mobile,
+          aadharNumber: u.aadharNumber,
+          approvalStatus: u.approvalStatus,
+          rejectionReason: u.rejectionReason,
+          villageId: u.villageId,
+          isActive: u.isActive,
+          roles: u.roles || [],
+          createdAt: u.createdAt,
         },
         status: response.status,
         success: true,
@@ -138,58 +155,64 @@ class AdminService {
     }
 
     return {
-      error: response.error || 'Failed to fetch user',
+      error: response.data?.error?.message || response.error || 'Failed to fetch user',
       status: response.status,
       success: false,
     };
   }
 
   /**
-   * Approve a user (GET request as per API spec)
+   * Approve a user (POST request as per API spec)
    */
-  async approveUser(userId: string): Promise<ApiResponse<{ message: string }>> {
-    const response = await apiClient.get<ApiWrapperResponse<any>>(
-      apiConfig.endpoints.admin.approveUser(userId)
+  async approveUser(userId: string, villageId?: string): Promise<ApiResponse<{ message: string }>> {
+    const response = await apiClient.post<ApiWrapperResponse<any>>(
+      apiConfig.endpoints.admin.approveUser(userId),
+      { villageId: villageId || getDefaultVillageId() }
     );
 
     return {
-      data: { message: response.data?.message || 'User approved' },
+      data: { message: response.data?.message || 'User approved successfully' },
       status: response.status,
       success: response.success,
-      error: response.error,
+      error: response.data?.error?.message || response.error,
     };
   }
 
   /**
-   * Reject a user with reason (GET request with query param as per API spec)
+   * Reject a user with reason (POST request as per API spec)
    */
-  async rejectUser(userId: string, reason: string): Promise<ApiResponse<{ message: string }>> {
-    const encodedReason = encodeURIComponent(reason);
-    const response = await apiClient.get<ApiWrapperResponse<any>>(
-      `${apiConfig.endpoints.admin.rejectUser(userId)}?reason=${encodedReason}`
+  async rejectUser(userId: string, reason: string, villageId?: string): Promise<ApiResponse<{ message: string }>> {
+    const response = await apiClient.post<ApiWrapperResponse<any>>(
+      apiConfig.endpoints.admin.rejectUser(userId),
+      { 
+        villageId: villageId || getDefaultVillageId(),
+        reason 
+      }
     );
 
     return {
-      data: { message: response.data?.message || 'User rejected' },
+      data: { message: response.data?.message || 'User rejected successfully' },
       status: response.status,
       success: response.success,
-      error: response.error,
+      error: response.data?.error?.message || response.error,
     };
   }
 
   /**
    * Delete (soft delete) a user
    */
-  async deleteUser(userId: string): Promise<ApiResponse<{ message: string }>> {
-    const response = await apiClient.delete<ApiWrapperResponse<any>>(
-      apiConfig.endpoints.admin.userById(userId)
-    );
+  async deleteUser(userId: string, villageId?: string): Promise<ApiResponse<{ message: string }>> {
+    const queryParams = new URLSearchParams();
+    queryParams.append('villageId', villageId || getDefaultVillageId());
+    
+    const endpoint = `${apiConfig.endpoints.admin.userById(userId)}?${queryParams.toString()}`;
+    const response = await apiClient.delete<ApiWrapperResponse<any>>(endpoint);
 
     return {
-      data: { message: response.data?.message || 'User deleted' },
+      data: { message: response.data?.message || 'User deleted successfully' },
       status: response.status,
       success: response.success,
-      error: response.error,
+      error: response.data?.error?.message || response.error,
     };
   }
 }
