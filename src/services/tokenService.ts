@@ -32,6 +32,12 @@ class TokenService {
     localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
   }
 
+  // Set only access token (for token refresh)
+  setAccessToken(accessToken: string): void {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+  }
+
   // Clear all tokens
   clearTokens(): void {
     if (typeof window === 'undefined') return;

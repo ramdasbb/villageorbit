@@ -1,6 +1,7 @@
 /**
  * RBAC Service
  * Handles Role-Based Access Control API calls
+ * Based on VillageOrbit API Documentation
  * Only accessible by SUPER_ADMIN users
  */
 
@@ -11,16 +12,16 @@ export interface Permission {
   id: string;
   name: string;
   description?: string;
-  created_at: string;
+  createdAt: string;
 }
 
 export interface Role {
   id: string;
   name: string;
   description?: string;
-  is_system_role: boolean;
-  permissions: Permission[];
-  created_at: string;
+  isSystemRole: boolean;
+  permissions: string[];
+  createdAt?: string;
 }
 
 export interface CreatePermissionRequest {
@@ -31,7 +32,7 @@ export interface CreatePermissionRequest {
 export interface CreateRoleRequest {
   name: string;
   description?: string;
-  is_system_role?: boolean;
+  isSystemRole?: boolean;
 }
 
 // API wrapper response format
@@ -39,7 +40,10 @@ interface ApiWrapperResponse<T> {
   success: boolean;
   message: string;
   data: T;
-  error_code?: string | null;
+  error?: {
+    code: string;
+    message: string;
+  };
 }
 
 class RbacService {
@@ -49,7 +53,9 @@ class RbacService {
    * Get all permissions
    */
   async getPermissions(): Promise<ApiResponse<Permission[]>> {
-    const response = await apiClient.get<ApiWrapperResponse<Permission[]>>(apiConfig.endpoints.rbac.permissions);
+    const response = await apiClient.get<ApiWrapperResponse<Permission[]>>(
+      apiConfig.endpoints.rbac.permissions
+    );
     
     if (response.success && response.data?.data) {
       return {
@@ -60,7 +66,7 @@ class RbacService {
     }
     
     return {
-      error: response.error || 'Failed to fetch permissions',
+      error: response.data?.error?.message || response.error || 'Failed to fetch permissions',
       status: response.status,
       success: false,
     };
@@ -70,7 +76,10 @@ class RbacService {
    * Create a new permission
    */
   async createPermission(data: CreatePermissionRequest): Promise<ApiResponse<Permission>> {
-    const response = await apiClient.post<ApiWrapperResponse<Permission>>(apiConfig.endpoints.rbac.permissions, data);
+    const response = await apiClient.post<ApiWrapperResponse<Permission>>(
+      apiConfig.endpoints.rbac.permissions,
+      data
+    );
     
     if (response.success && response.data?.data) {
       return {
@@ -81,7 +90,7 @@ class RbacService {
     }
     
     return {
-      error: response.data?.message || response.error || 'Failed to create permission',
+      error: response.data?.error?.message || response.error || 'Failed to create permission',
       status: response.status,
       success: false,
     };
@@ -96,10 +105,10 @@ class RbacService {
     );
     
     return {
-      data: { message: response.data?.message || 'Permission deleted' },
+      data: { message: response.data?.message || 'Permission deleted successfully' },
       status: response.status,
       success: response.success,
-      error: response.error,
+      error: response.data?.error?.message || response.error,
     };
   }
 
@@ -109,70 +118,8 @@ class RbacService {
    * Get all roles
    */
   async getRoles(): Promise<ApiResponse<Role[]>> {
-    const response = await apiClient.get<ApiWrapperResponse<Role[]>>(apiConfig.endpoints.rbac.roles);
-    
-    if (response.success && response.data?.data) {
-      return {
-        data: response.data.data,
-        status: response.status,
-        success: true,
-      };
-    }
-    
-    return {
-      error: response.error || 'Failed to fetch roles',
-      status: response.status,
-      success: false,
-    };
-  }
-
-  /**
-   * Create a new role
-   */
-  async createRole(data: CreateRoleRequest): Promise<ApiResponse<Role>> {
-    const response = await apiClient.post<ApiWrapperResponse<Role>>(apiConfig.endpoints.rbac.roles, data);
-    
-    if (response.success && response.data?.data) {
-      return {
-        data: response.data.data,
-        status: response.status,
-        success: true,
-      };
-    }
-    
-    return {
-      error: response.data?.message || response.error || 'Failed to create role',
-      status: response.status,
-      success: false,
-    };
-  }
-
-  /**
-   * Delete a role
-   */
-  async deleteRole(roleId: string): Promise<ApiResponse<{ message: string }>> {
-    const response = await apiClient.delete<ApiWrapperResponse<null>>(apiConfig.endpoints.rbac.roleById(roleId));
-    
-    return {
-      data: { message: response.data?.message || 'Role deleted' },
-      status: response.status,
-      success: response.success,
-      error: response.error,
-    };
-  }
-
-  // ============ ROLE-PERMISSION MAPPING ============
-
-  /**
-   * Add permissions to a role
-   */
-  async addPermissionsToRole(
-    roleId: string,
-    permissionIds: string[]
-  ): Promise<ApiResponse<Role>> {
-    const response = await apiClient.post<ApiWrapperResponse<Role>>(
-      apiConfig.endpoints.rbac.rolePermissions(roleId),
-      { permission_ids: permissionIds }
+    const response = await apiClient.get<ApiWrapperResponse<Role[]>>(
+      apiConfig.endpoints.rbac.roles
     );
     
     if (response.success && response.data?.data) {
@@ -184,9 +131,72 @@ class RbacService {
     }
     
     return {
-      error: response.data?.message || response.error || 'Failed to assign permissions',
+      error: response.data?.error?.message || response.error || 'Failed to fetch roles',
       status: response.status,
       success: false,
+    };
+  }
+
+  /**
+   * Create a new role
+   */
+  async createRole(data: CreateRoleRequest): Promise<ApiResponse<Role>> {
+    const response = await apiClient.post<ApiWrapperResponse<Role>>(
+      apiConfig.endpoints.rbac.roles,
+      data
+    );
+    
+    if (response.success && response.data?.data) {
+      return {
+        data: response.data.data,
+        status: response.status,
+        success: true,
+      };
+    }
+    
+    return {
+      error: response.data?.error?.message || response.error || 'Failed to create role',
+      status: response.status,
+      success: false,
+    };
+  }
+
+  /**
+   * Delete a role
+   */
+  async deleteRole(roleId: string): Promise<ApiResponse<{ message: string }>> {
+    const response = await apiClient.delete<ApiWrapperResponse<null>>(
+      apiConfig.endpoints.rbac.roleById(roleId)
+    );
+    
+    return {
+      data: { message: response.data?.message || 'Role deleted successfully' },
+      status: response.status,
+      success: response.success,
+      error: response.data?.error?.message || response.error,
+    };
+  }
+
+  // ============ ROLE-PERMISSION MAPPING ============
+
+  /**
+   * Add permissions to a role
+   * Accepts array of permission IDs
+   */
+  async addPermissionsToRole(
+    roleId: string,
+    permissionIds: string[]
+  ): Promise<ApiResponse<{ message: string }>> {
+    const response = await apiClient.post<ApiWrapperResponse<null>>(
+      apiConfig.endpoints.rbac.rolePermissions(roleId),
+      permissionIds // Send as array directly per API spec
+    );
+    
+    return {
+      data: { message: response.data?.message || 'Permissions assigned to role successfully' },
+      status: response.status,
+      success: response.success,
+      error: response.data?.error?.message || response.error,
     };
   }
 
@@ -202,10 +212,10 @@ class RbacService {
     );
     
     return {
-      data: { message: response.data?.message || 'Permission removed from role' },
+      data: { message: response.data?.message || 'Permission removed from role successfully' },
       status: response.status,
       success: response.success,
-      error: response.error,
+      error: response.data?.error?.message || response.error,
     };
   }
 
@@ -213,31 +223,22 @@ class RbacService {
 
   /**
    * Assign roles to a user
+   * Accepts array of role IDs
    */
   async assignRolesToUser(
     userId: string,
     roleIds: string[]
-  ): Promise<ApiResponse<{ user_id: string; roles: { id: string; name: string }[] }>> {
-    const response = await apiClient.post<ApiWrapperResponse<{ user_id: string; email: string; roles: { id: string; name: string }[]; all_permissions: string[] }>>(
+  ): Promise<ApiResponse<{ message: string }>> {
+    const response = await apiClient.post<ApiWrapperResponse<null>>(
       apiConfig.endpoints.rbac.userRoles(userId),
-      { role_ids: roleIds }
+      roleIds // Send as array directly per API spec
     );
     
-    if (response.success && response.data?.data) {
-      return {
-        data: {
-          user_id: response.data.data.user_id,
-          roles: response.data.data.roles,
-        },
-        status: response.status,
-        success: true,
-      };
-    }
-    
     return {
-      error: response.data?.message || response.error || 'Failed to assign roles',
+      data: { message: response.data?.message || 'Roles assigned to user successfully' },
       status: response.status,
-      success: false,
+      success: response.success,
+      error: response.data?.error?.message || response.error,
     };
   }
 
@@ -253,10 +254,10 @@ class RbacService {
     );
     
     return {
-      data: { message: response.data?.message || 'Role removed from user' },
+      data: { message: response.data?.message || 'Role removed from user successfully' },
       status: response.status,
       success: response.success,
-      error: response.error,
+      error: response.data?.error?.message || response.error,
     };
   }
 }
