@@ -208,9 +208,23 @@ class ApiClient {
       ? await response.json().catch(() => ({ message: 'Request failed' }))
       : null;
 
+    // Ensure error is always a string, never an object
+    let errorMessage: string | undefined;
+    if (errorData) {
+      if (typeof errorData.message === 'string') {
+        errorMessage = errorData.message;
+      } else if (typeof errorData.error === 'string') {
+        errorMessage = errorData.error;
+      } else if (errorData.error?.message) {
+        errorMessage = errorData.error.message;
+      } else {
+        errorMessage = 'Request failed';
+      }
+    }
+
     return {
       data,
-      error: errorData?.message || errorData?.error,
+      error: errorMessage,
       status: response.status,
       success: response.ok,
     };
