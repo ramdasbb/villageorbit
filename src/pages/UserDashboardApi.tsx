@@ -1,6 +1,6 @@
 /**
  * API-based User Dashboard
- * Uses REST API authentication instead of Supabase
+ * Uses REST API for authentication and profile management
  */
 
 import { useState, useEffect } from "react";
@@ -13,7 +13,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { usePageSEO } from "@/hooks/usePageSEO";
 import { useApiAuth } from "@/hooks/useApiAuth";
-import { ArrowLeft, LogOut, Edit, Save, X, Clock } from "lucide-react";
+import { userProfileApi } from "@/api";
+import { ArrowLeft, LogOut, Edit, Save, X, Clock, Loader2 } from "lucide-react";
 
 const UserDashboardApi = () => {
   usePageSEO({ title: "My Dashboard", description: "Your personal dashboard" });
@@ -30,9 +31,11 @@ const UserDashboardApi = () => {
   } = useApiAuth();
 
   const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
     mobile: '',
+    aadharNumber: '',
   });
 
   // Redirect if not authenticated
@@ -48,6 +51,7 @@ const UserDashboardApi = () => {
       setFormData({
         fullName: user.fullName || '',
         mobile: user.mobile || '',
+        aadharNumber: user.aadharNumber || '',
       });
     }
   }, [user]);
@@ -62,13 +66,38 @@ const UserDashboardApi = () => {
   };
 
   const handleUpdate = async () => {
-    // Note: Profile update would require a backend API endpoint
-    // For now, just show a placeholder message
-    toast({
-      title: "Update Pending",
-      description: "Profile updates require backend API integration.",
-    });
-    setEditing(false);
+    setSaving(true);
+    try {
+      const response = await userProfileApi.updateProfile({
+        fullName: formData.fullName,
+        mobile: formData.mobile,
+        aadharNumber: formData.aadharNumber,
+      });
+
+      if (response.success) {
+        toast({
+          title: "Profile Updated",
+          description: "Your profile has been updated successfully.",
+        });
+        await refreshUser();
+        setEditing(false);
+      } else {
+        toast({
+          title: "Update Failed",
+          description: response.error?.message || "Failed to update profile.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred.",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (authLoading) {
@@ -157,12 +186,16 @@ const UserDashboardApi = () => {
               </Button>
             ) : (
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => setEditing(false)}>
+                <Button variant="outline" size="sm" onClick={() => setEditing(false)} disabled={saving}>
                   <X className="mr-2 h-4 w-4" />
                   Cancel
                 </Button>
-                <Button size="sm" onClick={handleUpdate}>
-                  <Save className="mr-2 h-4 w-4" />
+                <Button size="sm" onClick={handleUpdate} disabled={saving}>
+                  {saving ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Save className="mr-2 h-4 w-4" />
+                  )}
                   Save
                 </Button>
               </div>
@@ -190,7 +223,8 @@ const UserDashboardApi = () => {
                 {editing ? (
                   <Input
                     value={formData.mobile}
-                    onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, mobile: e.target.value.replace(/\D/g, '').slice(0, 10) })}
+                    maxLength={10}
                   />
                 ) : (
                   <p className="text-muted-foreground">{user?.mobile || '-'}</p>
@@ -198,9 +232,18 @@ const UserDashboardApi = () => {
               </div>
               <div className="space-y-2">
                 <Label>Aadhar Number</Label>
-                <p className="text-muted-foreground">
-                  {user?.aadharNumber ? `XXXX-XXXX-${user.aadharNumber.slice(-4)}` : '-'}
-                </p>
+                {editing ? (
+                  <Input
+                    value={formData.aadharNumber}
+                    onChange={(e) => setFormData({ ...formData, aadharNumber: e.target.value.replace(/\D/g, '').slice(0, 12) })}
+                    maxLength={12}
+                    placeholder="12-digit Aadhar number"
+                  />
+                ) : (
+                  <p className="text-muted-foreground">
+                    {user?.aadharNumber ? `XXXX-XXXX-${user.aadharNumber.slice(-4)}` : '-'}
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label>Account Status</Label>

@@ -1,16 +1,15 @@
 /**
  * API-based Auth Hook
- * Replaces Supabase auth with REST API authentication
- * Optimized with memoization and stable callbacks
+ * Uses the new /src/api/ layer for authentication
+ * Provides authentication state, user data, and auth methods
  */
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { authService, UserProfile, UserRole } from "@/services/authService";
-import { tokenService } from "@/services/tokenService";
+import { authApi, tokenService, UserData } from "@/api";
 import { ROLES } from "@/lib/constants";
 
 export interface UseApiAuthReturn {
-  user: UserProfile | null;
+  user: UserData | null;
   loading: boolean;
   isAuthenticated: boolean;
   isAdmin: boolean;
@@ -19,7 +18,7 @@ export interface UseApiAuthReturn {
   isSubAdmin: boolean;
   isApproved: boolean;
   permissions: string[];
-  roles: UserRole[];
+  roles: Array<{ id: string; name: string }>;
   hasPermission: (permission: string) => boolean;
   hasAnyPermission: (permissions: string[]) => boolean;
   hasRole: (role: string) => boolean;
@@ -35,6 +34,7 @@ interface SignupData {
   fullName: string;
   mobile: string;
   aadharNumber?: string;
+  villageId?: string;
 }
 
 // Pre-lowercase role names for faster comparison
@@ -44,9 +44,9 @@ const ROLE_GRAMSEVAK = ROLES.GRAMSEVAK.toLowerCase();
 const ROLE_SUB_ADMIN = ROLES.SUB_ADMIN.toLowerCase();
 
 export const useApiAuth = (): UseApiAuthReturn => {
-  const [user, setUser] = useState<UserProfile | null>(() => {
+  const [user, setUser] = useState<UserData | null>(() => {
     // Initialize from cache synchronously to prevent flash
-    return authService.getCachedUser();
+    return tokenService.getUserData();
   });
   const [loading, setLoading] = useState(true);
 
@@ -58,7 +58,7 @@ export const useApiAuth = (): UseApiAuthReturn => {
       try {
         // If we have tokens, fetch fresh user data
         if (tokenService.hasTokens()) {
-          const response = await authService.getCurrentUser();
+          const response = await authApi.getCurrentUser();
           if (mounted) {
             if (response.success && response.data) {
               setUser(response.data);
@@ -94,14 +94,15 @@ export const useApiAuth = (): UseApiAuthReturn => {
   const login = useCallback(async (email: string, password: string) => {
     setLoading(true);
     try {
-      const response = await authService.login({ email, password });
+      const response = await authApi.login({ email, password });
       
       if (response.success && response.data) {
         setUser(response.data.user);
         return { success: true };
       }
       
-      return { success: false, error: response.error || 'Login failed' };
+      const errorMessage = response.error?.message || 'Login failed';
+      return { success: false, error: errorMessage };
     } catch (error) {
       console.error("Login error:", error);
       return { success: false, error: 'An unexpected error occurred' };
@@ -113,22 +114,24 @@ export const useApiAuth = (): UseApiAuthReturn => {
   const signup = useCallback(async (data: SignupData) => {
     setLoading(true);
     try {
-      const response = await authService.signup({
+      const response = await authApi.signup({
         email: data.email,
         password: data.password,
         fullName: data.fullName,
         mobile: data.mobile,
         aadharNumber: data.aadharNumber,
+        villageId: data.villageId || 'default',
       });
       
       if (response.success) {
         return { 
           success: true, 
-          message: response.data?.message || 'Registration successful. Please wait for admin approval.' 
+          message: response.message || 'Registration successful. Please wait for admin approval.' 
         };
       }
       
-      return { success: false, error: response.error || 'Signup failed' };
+      const errorMessage = response.error?.message || 'Signup failed';
+      return { success: false, error: errorMessage };
     } catch (error) {
       console.error("Signup error:", error);
       return { success: false, error: 'An unexpected error occurred' };
@@ -140,7 +143,7 @@ export const useApiAuth = (): UseApiAuthReturn => {
   const logout = useCallback(async () => {
     setLoading(true);
     try {
-      await authService.logout();
+      await authApi.logout();
       setUser(null);
     } finally {
       setLoading(false);
@@ -151,7 +154,7 @@ export const useApiAuth = (): UseApiAuthReturn => {
     if (!tokenService.hasTokens()) return;
     
     try {
-      const response = await authService.getCurrentUser();
+      const response = await authApi.getCurrentUser();
       if (response.success && response.data) {
         setUser(response.data);
       }

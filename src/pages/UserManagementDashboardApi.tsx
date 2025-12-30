@@ -1,5 +1,5 @@
 /**
- * API-based User Management Dashboard
+ * User Management Dashboard - API-based
  * Uses REST API instead of Supabase for user management
  */
 
@@ -16,7 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { usePageSEO } from "@/hooks/usePageSEO";
 import { useApiAuth } from "@/hooks/useApiAuth";
-import { adminService, AdminUser } from "@/services/adminService";
+import { adminUsersApi, AdminUser, PaginatedUsers } from "@/api";
 import { PermissionGuard } from "@/components/guards/PermissionGuard";
 import { BackendHealth } from "@/components/BackendHealth";
 import { ArrowLeft, Search, Check, X, Trash2, Download, RefreshCw } from "lucide-react";
@@ -71,10 +71,10 @@ const UserManagementDashboardApi = () => {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const response = await adminService.getUsers({
+      const response = await adminUsersApi.getUsers({
         page: currentPage - 1, // API uses 0-indexed pages
         size: 20,
-        approvalStatus: statusFilter !== 'all' ? statusFilter.toUpperCase() as any : undefined,
+        approvalStatus: statusFilter !== 'all' ? statusFilter.toUpperCase() as 'PENDING' | 'APPROVED' | 'REJECTED' : undefined,
         search: searchTerm || undefined,
       });
 
@@ -84,7 +84,7 @@ const UserManagementDashboardApi = () => {
       } else {
         toast({
           title: "Error",
-          description: response.error || "Failed to fetch users",
+          description: response.error?.message || "Failed to fetch users",
           variant: "destructive",
         });
       }
@@ -128,7 +128,7 @@ const UserManagementDashboardApi = () => {
 
     setActionLoading(true);
     try {
-      const response = await adminService.approveUser(userId);
+      const response = await adminUsersApi.approveUser(userId, { villageId: 'default' });
       if (response.success) {
         toast({
           title: "User Approved",
@@ -138,7 +138,7 @@ const UserManagementDashboardApi = () => {
       } else {
         toast({
           title: "Error",
-          description: response.error || "Failed to approve user",
+          description: response.error?.message || "Failed to approve user",
           variant: "destructive",
         });
       }
@@ -166,7 +166,10 @@ const UserManagementDashboardApi = () => {
 
     setActionLoading(true);
     try {
-      const response = await adminService.rejectUser(selectedUserId, rejectionReason);
+      const response = await adminUsersApi.rejectUser(selectedUserId, {
+        villageId: 'default',
+        reason: rejectionReason,
+      });
       if (response.success) {
         toast({
           title: "User Rejected",
@@ -179,7 +182,7 @@ const UserManagementDashboardApi = () => {
       } else {
         toast({
           title: "Error",
-          description: response.error || "Failed to reject user",
+          description: response.error?.message || "Failed to reject user",
           variant: "destructive",
         });
       }
@@ -211,7 +214,7 @@ const UserManagementDashboardApi = () => {
 
     setActionLoading(true);
     try {
-      const response = await adminService.deleteUser(userId);
+      const response = await adminUsersApi.deleteUser(userId);
       if (response.success) {
         toast({
           title: "User Deleted",
@@ -221,7 +224,7 @@ const UserManagementDashboardApi = () => {
       } else {
         toast({
           title: "Error",
-          description: response.error || "Failed to delete user",
+          description: response.error?.message || "Failed to delete user",
           variant: "destructive",
         });
       }
@@ -486,7 +489,7 @@ const UserManagementDashboardApi = () => {
                 onClick={handleReject}
                 disabled={actionLoading || !rejectionReason.trim()}
               >
-                Reject User
+                {actionLoading ? "Rejecting..." : "Reject User"}
               </Button>
             </DialogFooter>
           </DialogContent>
