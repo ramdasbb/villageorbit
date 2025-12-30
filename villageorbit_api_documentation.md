@@ -9,16 +9,21 @@
 ## Table of Contents
 
 1. [Authentication](#1-authentication)
-2. [User Profile](#2-user-profile)
-3. [User Management (Admin)](#3-user-management-admin)
-4. [RBAC Management](#4-rbac-management)
-5. [Village Management](#5-village-management)
-6. [Village Services](#6-village-services)
-7. [Marketplace](#7-marketplace)
-8. [Forum Posts](#8-forum-posts)
-9. [Feedback & Contact](#9-feedback--contact)
-10. [Exams](#10-exams)
-11. [Health Check](#11-health-check)
+2. [Password Reset](#2-password-reset)
+3. [User Profile](#3-user-profile)
+4. [User Management (Admin)](#4-user-management-admin)
+5. [RBAC Management](#5-rbac-management)
+6. [Village Management](#6-village-management)
+7. [Village Services](#7-village-services)
+8. [Marketplace](#8-marketplace)
+9. [Forum Posts](#9-forum-posts)
+10. [Feedback & Contact](#10-feedback--contact)
+11. [Exams](#11-exams)
+12. [File Storage](#12-file-storage)
+13. [Email Service](#13-email-service)
+14. [Rate Limiting (Admin)](#14-rate-limiting-admin)
+15. [Scheduler Jobs (Admin)](#15-scheduler-jobs-admin)
+16. [Health Check](#16-health-check)
 
 ---
 
@@ -221,7 +226,7 @@ curl -X POST "http://localhost:8001/api/v1/auth/refresh-token" \
 
 ## 1.4 Logout
 
-**POST** `/auth/logout` 🔒
+**POST** `/auth/logout` ðŸ”’
 
 Revoke refresh token.
 
@@ -248,7 +253,7 @@ curl -X POST "http://localhost:8001/api/v1/auth/logout" \
 
 ## 1.5 Get Current User Profile
 
-**GET** `/auth/me` 🔒
+**GET** `/auth/me` ðŸ”’
 
 Get authenticated user's profile.
 
@@ -288,13 +293,136 @@ curl -X GET "http://localhost:8001/api/v1/auth/me" \
 
 ---
 
-# 2. User Profile
+# 2. Password Reset
+
+Base path: `/api/v1/auth`
+
+## 2.1 Forgot Password (Request Reset)
+
+**POST** `/auth/forgot-password`
+
+Initiate password reset process. Sends reset email if user exists.
+
+### Request
+```bash
+curl -X POST "http://localhost:8001/api/v1/auth/forgot-password" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "user@example.com"
+  }'
+```
+
+### Request Body
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| email | string | Yes | Registered email address |
+
+### Success Response (200)
+```json
+{
+  "success": true,
+  "data": null,
+  "message": "If the email exists, a password reset link has been sent"
+}
+```
+
+> **Note:** For security, always returns success even if email doesn't exist.
+
+---
+
+## 2.2 Validate Reset Token
+
+**GET** `/auth/validate-reset-token`
+
+Validate if a password reset token is still valid.
+
+### Request
+```bash
+curl -X GET "http://localhost:8001/api/v1/auth/validate-reset-token?token=abc123xyz..."
+```
+
+### Query Parameters
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| token | string | Yes | Password reset token from email |
+
+### Success Response (200)
+```json
+{
+  "success": true,
+  "data": {
+    "valid": true
+  },
+  "message": "Token is valid"
+}
+```
+
+### Error Response (400)
+```json
+{
+  "success": false,
+  "error": {
+    "code": "INVALID_TOKEN",
+    "message": "Invalid or expired reset token"
+  }
+}
+```
+
+---
+
+## 2.3 Reset Password
+
+**POST** `/auth/reset-password`
+
+Reset password using a valid token.
+
+### Request
+```bash
+curl -X POST "http://localhost:8001/api/v1/auth/reset-password" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "token": "abc123xyz...",
+    "newPassword": "NewSecurePass@123",
+    "confirmPassword": "NewSecurePass@123"
+  }'
+```
+
+### Request Body
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| token | string | Yes | Reset token from email |
+| newPassword | string | Yes | New password (min 8 chars, mixed case, number, special char) |
+| confirmPassword | string | Yes | Must match newPassword |
+
+### Success Response (200)
+```json
+{
+  "success": true,
+  "data": null,
+  "message": "Password reset successful"
+}
+```
+
+### Error Response (400)
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Passwords do not match"
+  }
+}
+```
+
+---
+
+# 3. User Profile
 
 Base path: `/api/v1/users`
 
-## 2.1 Get Profile
+## 3.1 Get Profile
 
-**GET** `/users/profile` 🔒
+**GET** `/users/profile` ðŸ”’
 
 ### Request
 ```bash
@@ -323,9 +451,9 @@ curl -X GET "http://localhost:8001/api/v1/users/profile" \
 
 ---
 
-## 2.2 Update Profile
+## 3.2 Update Profile
 
-**PUT** `/users/profile` 🔒
+**PUT** `/users/profile` ðŸ”’
 
 ### Request
 ```bash
@@ -355,9 +483,9 @@ curl -X PUT "http://localhost:8001/api/v1/users/profile" \
 
 ---
 
-# 3. User Management (Admin)
+# 4. User Management (Admin)
 
-Base path: `/api/v1/admin/users` 🔒
+Base path: `/api/v1/admin/users` ðŸ”’
 
 ## 3.1 Get All Users
 
@@ -519,9 +647,9 @@ curl -X DELETE "http://localhost:8001/api/v1/admin/users/550e8400-e29b-41d4-a716
 
 ---
 
-# 4. RBAC Management
+# 5. RBAC Management
 
-Base path: `/api/v1/rbac` 🔒
+Base path: `/api/v1/rbac` ðŸ”’
 
 ## 4.1 Create Permission
 
@@ -670,7 +798,7 @@ curl -X POST "http://localhost:8001/api/v1/rbac/users/550e8400-e29b-41d4-a716-44
 
 ---
 
-# 5. Village Management
+# 6. Village Management
 
 Base path: `/api/v1/villages`
 
@@ -764,7 +892,7 @@ curl -X GET "http://localhost:8001/api/v1/villages/550e8400-e29b-41d4-a716-44665
 
 ---
 
-## 5.4 Create Village 🔒
+## 5.4 Create Village ðŸ”’
 
 **POST** `/villages`
 
@@ -798,7 +926,7 @@ curl -X POST "http://localhost:8001/api/v1/villages" \
 
 ---
 
-# 6. Village Services
+# 7. Village Services
 
 Base path: `/api/v1/services`
 
@@ -897,9 +1025,9 @@ curl -X GET "http://localhost:8001/api/v1/services/categories"
 {
   "success": true,
   "data": [
-    {"id": "uuid", "name": "Medical", "icon": "🏥", "isActive": true},
-    {"id": "uuid", "name": "Grocery", "icon": "🛒", "isActive": true},
-    {"id": "uuid", "name": "Education", "icon": "📚", "isActive": true}
+    {"id": "uuid", "name": "Medical", "icon": "ðŸ¥", "isActive": true},
+    {"id": "uuid", "name": "Grocery", "icon": "ðŸ›’", "isActive": true},
+    {"id": "uuid", "name": "Education", "icon": "ðŸ“š", "isActive": true}
   ],
   "message": "Categories retrieved successfully"
 }
@@ -907,7 +1035,7 @@ curl -X GET "http://localhost:8001/api/v1/services/categories"
 
 ---
 
-## 6.4 Create Service 🔒
+## 6.4 Create Service ðŸ”’
 
 **POST** `/services`
 
@@ -941,7 +1069,7 @@ curl -X POST "http://localhost:8001/api/v1/services" \
 
 ---
 
-# 7. Marketplace
+# 8. Marketplace
 
 Base path: `/api/v1/items`
 
@@ -1018,7 +1146,7 @@ curl -X GET "http://localhost:8001/api/v1/items/550e8400-e29b-41d4-a716-44665544
 
 ---
 
-## 7.3 Create Item Listing 🔒
+## 7.3 Create Item Listing ðŸ”’
 
 **POST** `/items`
 
@@ -1054,7 +1182,7 @@ curl -X POST "http://localhost:8001/api/v1/items" \
 
 ---
 
-## 7.4 Get My Items 🔒
+## 7.4 Get My Items ðŸ”’
 
 **GET** `/items/my-items`
 
@@ -1066,7 +1194,7 @@ curl -X GET "http://localhost:8001/api/v1/items/my-items?page=0&size=20" \
 
 ---
 
-## 7.5 Mark Item as Sold 🔒
+## 7.5 Mark Item as Sold ðŸ”’
 
 **PUT** `/items/{itemId}/sold`
 
@@ -1090,7 +1218,7 @@ curl -X PUT "http://localhost:8001/api/v1/items/550e8400-e29b-41d4-a716-44665544
 
 ---
 
-# 8. Forum Posts
+# 9. Forum Posts
 
 Base path: `/api/v1/posts`
 
@@ -1132,7 +1260,7 @@ curl -X GET "http://localhost:8001/api/v1/posts?search=announcement&page=0&size=
 
 ---
 
-## 8.2 Create Post 🔒
+## 8.2 Create Post ðŸ”’
 
 **POST** `/posts`
 
@@ -1164,7 +1292,7 @@ curl -X POST "http://localhost:8001/api/v1/posts" \
 
 ---
 
-## 8.3 Like Post 🔒
+## 8.3 Like Post ðŸ”’
 
 **POST** `/posts/{postId}/like`
 
@@ -1188,7 +1316,7 @@ curl -X POST "http://localhost:8001/api/v1/posts/550e8400-e29b-41d4-a716-4466554
 
 ---
 
-## 8.4 Add Comment 🔒
+## 8.4 Add Comment ðŸ”’
 
 **POST** `/posts/{postId}/comments`
 
@@ -1218,7 +1346,7 @@ curl -X POST "http://localhost:8001/api/v1/posts/550e8400-e29b-41d4-a716-4466554
 
 ---
 
-# 9. Feedback & Contact
+# 10. Feedback & Contact
 
 Base path: `/api/v1`
 
@@ -1302,7 +1430,7 @@ curl -X POST "http://localhost:8001/api/v1/contact" \
 
 ---
 
-# 10. Exams
+# 11. Exams
 
 Base path: `/api/v1/exams`
 
@@ -1340,7 +1468,7 @@ curl -X GET "http://localhost:8001/api/v1/exams" \
 
 ---
 
-## 10.2 Start Exam Attempt 🔒
+## 10.2 Start Exam Attempt ðŸ”’
 
 **POST** `/exams/{examId}/attempts`
 
@@ -1371,7 +1499,7 @@ curl -X POST "http://localhost:8001/api/v1/exams/550e8400-e29b-41d4-a716-4466554
 
 ---
 
-## 10.3 Submit Answers 🔒
+## 10.3 Submit Answers ðŸ”’
 
 **PUT** `/exams/attempts/{attemptId}`
 
@@ -1404,7 +1532,7 @@ curl -X PUT "http://localhost:8001/api/v1/exams/attempts/550e8400-e29b-41d4-a716
 
 ---
 
-## 10.4 Get Exam Results 🔒
+## 10.4 Get Exam Results ðŸ”’
 
 **GET** `/exams/attempts/{attemptId}/results`
 
@@ -1433,9 +1561,697 @@ curl -X GET "http://localhost:8001/api/v1/exams/attempts/550e8400-e29b-41d4-a716
 
 ---
 
-# 11. Health Check
+# 12. File Storage
 
-## 11.1 Basic Health Check (Public)
+Base path: `/api/v1/storage`
+
+## 12.1 Upload File ðŸ”’
+
+**POST** `/storage/upload`
+
+Upload a file to cloud storage (Cloudflare R2 / AWS S3).
+
+### Request
+```bash
+curl -X POST "http://localhost:8001/api/v1/storage/upload" \
+  -H "Authorization: Bearer <ACCESS_TOKEN>" \
+  -F "file=@/path/to/document.pdf" \
+  -F "folder=documents"
+```
+
+### Form Parameters
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| file | file | Yes | File to upload (max 100MB) |
+| folder | string | No | Destination folder |
+
+### Success Response (200)
+```json
+{
+  "success": true,
+  "data": {
+    "key": "uploads/2025/12/31/document-abc123.pdf",
+    "fileName": "document.pdf",
+    "contentType": "application/pdf",
+    "size": 1048576,
+    "url": "https://storage.villageorbit.com/uploads/2025/12/31/document-abc123.pdf"
+  },
+  "message": "File uploaded successfully"
+}
+```
+
+---
+
+## 12.2 Download File ðŸ”’
+
+**GET** `/storage/download`
+
+Download a file from storage.
+
+### Request
+```bash
+curl -X GET "http://localhost:8001/api/v1/storage/download?filePath=uploads/2025/12/31/document.pdf" \
+  -H "Authorization: Bearer <ACCESS_TOKEN>" \
+  -o document.pdf
+```
+
+### Query Parameters
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| filePath | string | Yes | Full path/key of the file |
+
+### Success Response (200)
+Returns file binary with appropriate Content-Type header.
+
+---
+
+## 12.3 Get File Metadata ðŸ”’
+
+**GET** `/storage/metadata`
+
+Get metadata of a stored file.
+
+### Request
+```bash
+curl -X GET "http://localhost:8001/api/v1/storage/metadata?filePath=uploads/2025/12/31/document.pdf" \
+  -H "Authorization: Bearer <ACCESS_TOKEN>"
+```
+
+### Success Response (200)
+```json
+{
+  "success": true,
+  "data": {
+    "key": "uploads/2025/12/31/document.pdf",
+    "size": 1048576,
+    "contentType": "application/pdf",
+    "lastModified": "2025-12-31T10:00:00Z",
+    "metadata": {
+      "uploadedBy": "user-uuid",
+      "originalName": "document.pdf"
+    }
+  },
+  "message": "File metadata retrieved"
+}
+```
+
+---
+
+## 12.4 Get Signed URL ðŸ”’
+
+**GET** `/storage/signed-url`
+
+Get a pre-signed URL for temporary access.
+
+### Request
+```bash
+curl -X GET "http://localhost:8001/api/v1/storage/signed-url?filePath=uploads/document.pdf&expiresIn=3600" \
+  -H "Authorization: Bearer <ACCESS_TOKEN>"
+```
+
+### Query Parameters
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| filePath | string | Yes | Full path/key of the file |
+| expiresIn | integer | No | URL validity in seconds (default: 3600) |
+
+### Success Response (200)
+```json
+{
+  "success": true,
+  "data": {
+    "url": "https://storage.villageorbit.com/uploads/document.pdf?X-Amz-Signature=...",
+    "expiresAt": "2025-12-31T11:00:00Z"
+  },
+  "message": "Signed URL generated"
+}
+```
+
+---
+
+## 12.5 Delete File ðŸ”’
+
+**DELETE** `/storage/delete`
+
+Delete a file from storage.
+
+### Request
+```bash
+curl -X DELETE "http://localhost:8001/api/v1/storage/delete?filePath=uploads/document.pdf" \
+  -H "Authorization: Bearer <ACCESS_TOKEN>"
+```
+
+### Success Response (200)
+```json
+{
+  "success": true,
+  "data": null,
+  "message": "File deleted successfully"
+}
+```
+
+---
+
+# 13. Email Service
+
+Base path: `/api/v1/email`
+
+## 13.1 Send Email ðŸ”’ (Admin)
+
+**POST** `/email/send`
+
+Send an email using configured provider (SendGrid/AWS SES).
+
+### Request
+```bash
+curl -X POST "http://localhost:8001/api/v1/email/send" \
+  -H "Authorization: Bearer <ACCESS_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "to": "recipient@example.com",
+    "subject": "Important Notification",
+    "body": "This is the email content.",
+    "html": "<h1>Important Notification</h1><p>This is the email content.</p>"
+  }'
+```
+
+### Request Body
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| to | string | Yes | Recipient email address |
+| subject | string | Yes | Email subject |
+| body | string | Yes | Plain text body |
+| html | string | No | HTML body (optional) |
+| cc | string | No | CC recipients (comma-separated) |
+| bcc | string | No | BCC recipients (comma-separated) |
+
+### Success Response (200)
+```json
+{
+  "success": true,
+  "data": {
+    "messageId": "msg-uuid-123",
+    "provider": "sendgrid",
+    "status": "sent"
+  },
+  "message": "Email sent successfully"
+}
+```
+
+### Error Response (500)
+```json
+{
+  "success": false,
+  "error": {
+    "code": "EMAIL_SEND_FAILED",
+    "message": "Failed to send email: Invalid recipient"
+  }
+}
+```
+
+---
+
+## 13.2 Get Email Service Status ðŸ”’
+
+**GET** `/email/status`
+
+Check email service configuration and status.
+
+### Request
+```bash
+curl -X GET "http://localhost:8001/api/v1/email/status" \
+  -H "Authorization: Bearer <ACCESS_TOKEN>"
+```
+
+### Success Response (200)
+```json
+{
+  "success": true,
+  "data": {
+    "enabled": true,
+    "provider": "sendgrid",
+    "fromAddress": "noreply@villageorbit.com",
+    "configured": true
+  },
+  "message": "Email service status retrieved"
+}
+```
+
+---
+
+# 14. Rate Limiting (Admin)
+
+Base path: `/api/v1/admin/rate-limits`
+
+All endpoints require admin authentication ðŸ”’
+
+## 14.1 Get All Rate Limit Configurations
+
+**GET** `/admin/rate-limits`
+
+Retrieve all rate limit configurations.
+
+### Request
+```bash
+curl -X GET "http://localhost:8001/api/v1/admin/rate-limits" \
+  -H "Authorization: Bearer <ACCESS_TOKEN>"
+```
+
+### Success Response (200)
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "uuid",
+      "configKey": "LOGIN_PER_IP",
+      "description": "Login attempts per IP address",
+      "requestsPerPeriod": 5,
+      "periodInSeconds": 60,
+      "requestsPerMinute": 5.0,
+      "enabled": true,
+      "updatedBy": null,
+      "createdAt": "2025-12-31T00:00:00",
+      "updatedAt": "2025-12-31T00:00:00"
+    },
+    {
+      "id": "uuid",
+      "configKey": "SIGNUP_PER_IP",
+      "description": "Signup attempts per IP address",
+      "requestsPerPeriod": 3,
+      "periodInSeconds": 60,
+      "requestsPerMinute": 3.0,
+      "enabled": true
+    },
+    {
+      "id": "uuid",
+      "configKey": "FORGOT_PASSWORD_PER_IP",
+      "description": "Password reset requests per IP",
+      "requestsPerPeriod": 3,
+      "periodInSeconds": 3600,
+      "requestsPerMinute": 0.05,
+      "enabled": true
+    },
+    {
+      "id": "uuid",
+      "configKey": "PUBLIC_API_PER_IP",
+      "description": "Public API requests per IP",
+      "requestsPerPeriod": 60,
+      "periodInSeconds": 60,
+      "requestsPerMinute": 60.0,
+      "enabled": true
+    },
+    {
+      "id": "uuid",
+      "configKey": "AUTHENTICATED_STANDARD",
+      "description": "Standard user API requests",
+      "requestsPerPeriod": 100,
+      "periodInSeconds": 60,
+      "requestsPerMinute": 100.0,
+      "enabled": true
+    },
+    {
+      "id": "uuid",
+      "configKey": "AUTHENTICATED_ADMIN",
+      "description": "Admin user API requests",
+      "requestsPerPeriod": 300,
+      "periodInSeconds": 60,
+      "requestsPerMinute": 300.0,
+      "enabled": true
+    },
+    {
+      "id": "uuid",
+      "configKey": "UPLOAD_PER_USER",
+      "description": "File uploads per user",
+      "requestsPerPeriod": 10,
+      "periodInSeconds": 60,
+      "requestsPerMinute": 10.0,
+      "enabled": true
+    }
+  ],
+  "message": "Rate limit configurations retrieved"
+}
+```
+
+---
+
+## 14.2 Get Rate Limit by Key
+
+**GET** `/admin/rate-limits/{configKey}`
+
+Get a specific rate limit configuration.
+
+### Request
+```bash
+curl -X GET "http://localhost:8001/api/v1/admin/rate-limits/LOGIN_PER_IP" \
+  -H "Authorization: Bearer <ACCESS_TOKEN>"
+```
+
+### Success Response (200)
+```json
+{
+  "success": true,
+  "data": {
+    "id": "uuid",
+    "configKey": "LOGIN_PER_IP",
+    "description": "Login attempts per IP address",
+    "requestsPerPeriod": 5,
+    "periodInSeconds": 60,
+    "requestsPerMinute": 5.0,
+    "enabled": true
+  },
+  "message": "Configuration retrieved"
+}
+```
+
+---
+
+## 14.3 Update Rate Limit Configuration
+
+**PUT** `/admin/rate-limits/{configKey}`
+
+Update an existing rate limit configuration.
+
+### Request
+```bash
+curl -X PUT "http://localhost:8001/api/v1/admin/rate-limits/LOGIN_PER_IP" \
+  -H "Authorization: Bearer <ACCESS_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "configKey": "LOGIN_PER_IP",
+    "description": "Login attempts per IP address",
+    "requestsPerPeriod": 10,
+    "periodInSeconds": 60,
+    "enabled": true
+  }'
+```
+
+### Request Body
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| configKey | string | Yes | Rate limit identifier |
+| description | string | Yes | Human-readable description |
+| requestsPerPeriod | integer | Yes | Max requests allowed (min: 1) |
+| periodInSeconds | integer | Yes | Time window in seconds (min: 1) |
+| enabled | boolean | No | Enable/disable the limit (default: true) |
+
+### Success Response (200)
+```json
+{
+  "success": true,
+  "data": {
+    "id": "uuid",
+    "configKey": "LOGIN_PER_IP",
+    "description": "Login attempts per IP address",
+    "requestsPerPeriod": 10,
+    "periodInSeconds": 60,
+    "requestsPerMinute": 10.0,
+    "enabled": true,
+    "updatedBy": "admin-uuid",
+    "updatedAt": "2025-12-31T10:00:00"
+  },
+  "message": "Rate limit configuration updated"
+}
+```
+
+---
+
+## 14.4 Toggle Rate Limit
+
+**PATCH** `/admin/rate-limits/{configKey}/toggle`
+
+Enable or disable a rate limit.
+
+### Request
+```bash
+curl -X PATCH "http://localhost:8001/api/v1/admin/rate-limits/LOGIN_PER_IP/toggle?enabled=false" \
+  -H "Authorization: Bearer <ACCESS_TOKEN>"
+```
+
+### Query Parameters
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| enabled | boolean | Yes | true to enable, false to disable |
+
+### Success Response (200)
+```json
+{
+  "success": true,
+  "data": {
+    "configKey": "LOGIN_PER_IP",
+    "enabled": false
+  },
+  "message": "Rate limit disabled"
+}
+```
+
+---
+
+## 14.5 Create Custom Rate Limit
+
+**POST** `/admin/rate-limits`
+
+Create a new custom rate limit configuration.
+
+### Request
+```bash
+curl -X POST "http://localhost:8001/api/v1/admin/rate-limits" \
+  -H "Authorization: Bearer <ACCESS_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "configKey": "CUSTOM_ENDPOINT_LIMIT",
+    "description": "Custom rate limit for special endpoint",
+    "requestsPerPeriod": 20,
+    "periodInSeconds": 60,
+    "enabled": true
+  }'
+```
+
+### Success Response (201)
+```json
+{
+  "success": true,
+  "data": {
+    "id": "uuid",
+    "configKey": "CUSTOM_ENDPOINT_LIMIT",
+    "description": "Custom rate limit for special endpoint",
+    "requestsPerPeriod": 20,
+    "periodInSeconds": 60,
+    "requestsPerMinute": 20.0,
+    "enabled": true
+  },
+  "message": "Rate limit configuration created"
+}
+```
+
+---
+
+## 14.6 Delete Rate Limit
+
+**DELETE** `/admin/rate-limits/{configKey}`
+
+Delete a custom rate limit configuration.
+
+### Request
+```bash
+curl -X DELETE "http://localhost:8001/api/v1/admin/rate-limits/CUSTOM_ENDPOINT_LIMIT" \
+  -H "Authorization: Bearer <ACCESS_TOKEN>"
+```
+
+### Success Response (200)
+```json
+{
+  "success": true,
+  "data": null,
+  "message": "Rate limit configuration deleted"
+}
+```
+
+---
+
+## 14.7 Reset Rate Limit for Identifier
+
+**POST** `/admin/rate-limits/reset/{identifier}`
+
+Clear rate limit buckets for a specific IP or user.
+
+### Request
+```bash
+curl -X POST "http://localhost:8001/api/v1/admin/rate-limits/reset/192.168.1.100" \
+  -H "Authorization: Bearer <ACCESS_TOKEN>"
+```
+
+### Path Parameters
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| identifier | string | IP address or user UUID |
+
+### Success Response (200)
+```json
+{
+  "success": true,
+  "data": null,
+  "message": "Rate limits reset for 192.168.1.100"
+}
+```
+
+---
+
+## 14.8 Refresh Rate Limit Cache
+
+**POST** `/admin/rate-limits/refresh-cache`
+
+Force refresh of rate limit configuration cache.
+
+### Request
+```bash
+curl -X POST "http://localhost:8001/api/v1/admin/rate-limits/refresh-cache" \
+  -H "Authorization: Bearer <ACCESS_TOKEN>"
+```
+
+### Success Response (200)
+```json
+{
+  "success": true,
+  "data": null,
+  "message": "Rate limit cache refreshed"
+}
+```
+
+---
+
+## 14.9 Get Current Rate Limit Status
+
+**GET** `/admin/rate-limits/status`
+
+Get rate limit status for the current request/user.
+
+### Request
+```bash
+curl -X GET "http://localhost:8001/api/v1/admin/rate-limits/status" \
+  -H "Authorization: Bearer <ACCESS_TOKEN>"
+```
+
+### Success Response (200)
+```json
+{
+  "success": true,
+  "data": {
+    "configKey": "AUTHENTICATED_ADMIN",
+    "limited": false,
+    "remainingRequests": 295,
+    "totalAllowed": 300,
+    "resetInSeconds": 45,
+    "identifier": "user-uuid"
+  },
+  "message": "Rate limit status retrieved"
+}
+```
+
+---
+
+## Rate Limit Response Headers
+
+All API responses include rate limit headers:
+
+| Header | Description | Example |
+|--------|-------------|---------|
+| `X-RateLimit-Limit` | Total requests allowed | `100` |
+| `X-RateLimit-Remaining` | Requests remaining | `95` |
+| `X-RateLimit-Reset` | Seconds until reset | `45` |
+| `Retry-After` | Seconds to wait (when limited) | `60` |
+
+### Rate Limited Response (429)
+```json
+{
+  "success": false,
+  "error": {
+    "code": "RATE_LIMIT_EXCEEDED",
+    "message": "Too many requests. Please retry after 60 seconds."
+  }
+}
+```
+
+---
+
+# 15. Scheduler Jobs (Admin)
+
+Base path: `/api/v1/admin/scheduler`
+
+All endpoints require admin authentication ðŸ”’
+
+## 15.1 Get All Scheduled Jobs
+
+**GET** `/admin/scheduler/jobs`
+
+List all scheduled jobs and their status.
+
+### Request
+```bash
+curl -X GET "http://localhost:8001/api/v1/admin/scheduler/jobs" \
+  -H "Authorization: Bearer <ACCESS_TOKEN>"
+```
+
+### Success Response (200)
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "jobName": "healthCheckScheduler",
+      "description": "Periodic health check every 5 minutes",
+      "cronExpression": "0 */5 * * * *",
+      "lastExecution": "2025-12-31T09:55:00",
+      "nextExecution": "2025-12-31T10:00:00",
+      "status": "ACTIVE",
+      "enabled": true
+    },
+    {
+      "jobName": "expiredTokenCleanup",
+      "description": "Clean up expired password reset tokens",
+      "cronExpression": "0 0 2 * * *",
+      "lastExecution": "2025-12-31T02:00:00",
+      "nextExecution": "2026-01-01T02:00:00",
+      "status": "ACTIVE",
+      "enabled": true
+    }
+  ],
+  "message": "Scheduled jobs retrieved"
+}
+```
+
+---
+
+## 15.2 Trigger Job Manually
+
+**POST** `/admin/scheduler/jobs/{jobName}/trigger`
+
+Manually trigger a scheduled job.
+
+### Request
+```bash
+curl -X POST "http://localhost:8001/api/v1/admin/scheduler/jobs/healthCheckScheduler/trigger" \
+  -H "Authorization: Bearer <ACCESS_TOKEN>"
+```
+
+### Success Response (200)
+```json
+{
+  "success": true,
+  "data": {
+    "jobName": "healthCheckScheduler",
+    "triggeredAt": "2025-12-31T10:00:00",
+    "status": "TRIGGERED"
+  },
+  "message": "Job triggered successfully"
+}
+```
+
+---
+
+# 16. Health Check
+
+## 16.1 Basic Health Check (Public)
 
 **GET** `/health` or `/api/v1/health`
 
@@ -1455,7 +2271,7 @@ curl -X GET "http://localhost:8001/api/v1/health"
 
 ---
 
-## 11.2 Detailed Health Check (Public)
+## 16.2 Detailed Health Check (Public)
 
 **GET** `/health/detailed` or `/api/v1/health/detailed`
 
@@ -1501,6 +2317,9 @@ curl -X GET "http://localhost:8001/api/v1/health/detailed"
 | VILLAGE_NOT_FOUND | 404 | Village does not exist |
 | SIGNUP_ERROR | 400 | Registration failed |
 | VALIDATION_ERROR | 400 | Invalid input data |
+| RATE_LIMIT_EXCEEDED | 429 | Too many requests |
+| EMAIL_SEND_FAILED | 500 | Email delivery failed |
+| STORAGE_ERROR | 500 | File storage operation failed |
 | ERROR | 500 | Internal server error |
 
 ---
@@ -1527,6 +2346,6 @@ Role: super_admin (full access)
 
 ---
 
-**Document Version:** 1.0.0  
-**Last Updated:** December 30, 2025  
+**Document Version:** 1.1.0  
+**Last Updated:** December 31, 2025  
 **API Version:** v1
