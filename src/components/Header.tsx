@@ -1,8 +1,8 @@
 import { useState, useContext, useMemo, memo } from "react";
 import { createPortal } from "react-dom";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { LazyLoadImage } from 'react-lazy-load-image-component';
-import 'react-lazy-load-image-component/src/effects/blur.css';
+import { LazyLoadImage } from "react-lazy-load-image-component";
+import "react-lazy-load-image-component/src/effects/blur.css";
 
 import {
   Menu,
@@ -17,7 +17,7 @@ import {
   Instagram,
   Facebook,
   Youtube,
-  Share2
+  Share2,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -40,7 +40,6 @@ import { VillageContext } from "@/context/VillageContextConfig";
 import { cn } from "@/lib/utils";
 import { getDefaultNavigationConfig } from "@/hooks/useNavigationConfig";
 
-
 // Header.tsx (top)
 type Visible =
   | "proudPeople"
@@ -55,7 +54,6 @@ type Visible =
   | "contact"
   | "announcement";
 
-
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [desktopHomeOpen, setDesktopHomeOpen] = useState(false);
@@ -65,10 +63,13 @@ const Header: React.FC = () => {
   const { isPageVisible } = usePageVisibility();
   const navigate = useNavigate();
   const location = useLocation();
-  const { config, } = useContext(VillageContext);
+  const { config } = useContext(VillageContext);
 
   const navConfig = (config as any)?.navigationConfig || null;
-  const currentLang = (i18n.language?.split('-')[0] || 'en') as 'en' | 'hi' | 'mr';
+  const currentLang = (i18n.language?.split("-")[0] || "en") as
+    | "en"
+    | "hi"
+    | "mr";
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -79,90 +80,89 @@ const Header: React.FC = () => {
     const configToUse = navConfig || getDefaultNavigationConfig();
 
     const standaloneNavItems = configToUse.standaloneItems
-        .filter(item => item.isVisible && isPageVisible(item.pageKey)) 
+      .filter((item) => item.isVisible && isPageVisible(item.pageKey))
       .sort((a, b) => a.order - b.order)
-      .map(item => ({
+      .map((item) => ({
         name: item.label[currentLang] || item.label.en,
         href: item.href,
-        pageKey: item.pageKey
+        pageKey: item.pageKey,
       }));
 
     const homeMenuSections = configToUse.homeMenuSections
-      .filter(section => section.isVisible)
+      .filter((section) => section.isVisible)
       .sort((a, b) => a.order - b.order)
-      .map(section => ({
+      .map((section) => ({
         title: section.title[currentLang] || section.title.en,
         items: section.items
-          .filter(item => item.isVisible && isPageVisible(item.pageKey))
+          .filter((item) => item.isVisible && isPageVisible(item.pageKey))
           .sort((a, b) => a.order - b.order)
-          .map(item => ({
+          .map((item) => ({
             name: item.label[currentLang] || item.label.en,
             href: item.href,
-            pageKey: item.pageKey
-          }))
+            pageKey: item.pageKey,
+          })),
       }))
-      .filter(section => section.items.length > 0);
+      .filter((section) => section.items.length > 0);
 
     return { standaloneNavItems, homeMenuSections };
   }, [navConfig, currentLang, isPageVisible]);
 
   const { standaloneNavItems, homeMenuSections } = navigationData;
 
-
   // ------------------------------------------------------------------
   // YELLOW CONTACT BAR (NON-STICKY)
   // ------------------------------------------------------------------
-  const YellowBar = (
-    config?.contact?.office && (
-      <div className="w-full bg-[#F2CB4A] text-black py-3 px-4
+  const YellowBar = config?.contact?.office && (
+    <div
+      className="w-full bg-[#F2CB4A] text-black py-3 px-4
         flex flex-col items-center text-center gap-3
         lg:flex-row lg:text-left lg:items-center lg:justify-between lg:gap-6
-      ">
-        {/* Phone */}
-        <div className="flex items-center gap-2 justify-center lg:justify-start">
-          <Phone className="h-4 w-4" />
-          <a href={`tel:${config.contact.office.phone}`}>
-            {config.contact.office.phone}
-          </a>
-        </div>
-
-        {/* Email */}
-        <div className="flex items-center gap-2 justify-center lg:justify-start">
-          <Mail className="h-4 w-4" />
-          <span>{config.contact.office.email}</span>
-        </div>
-
-        {/* Social Icons */}
-        <div className="flex items-center gap-4 justify-center lg:justify-end">
-          {config?.social?.instagram && (
-            <a href={config.social.instagram} target="_blank">
-              <Instagram className="h-6 w-6 text-black" />
-            </a>
-          )}
-          {config?.social?.facebook && (
-            <a href={config.social.facebook} target="_blank">
-              <Facebook className="h-6 w-6 text-black" />
-            </a>
-          )}
-          {config?.social?.youtube && (
-            <a href={config.social.youtube} target="_blank">
-              <Youtube className="h-6 w-6 text-black" />
-            </a>
-          )}
-
-          <button
-            onClick={() =>
-              navigator.share && navigator.share({ url: window.location.href })
-            }
-          >
-            <Share2 className="h-6 w-6 text-black" />
-          </button>
-        </div>
+      "
+    >
+      {/* Phone */}
+      <div className="flex items-center gap-2 justify-center lg:justify-start">
+        <Phone className="h-4 w-4" />
+        <a href={`tel:${config.contact.office.phone}`}>
+          {config.contact.office.phone}
+        </a>
       </div>
-    )
+
+      {/* Email */}
+      <div className="flex items-center gap-2 justify-center lg:justify-start">
+        <Mail className="h-4 w-4" />
+        <span>{config.contact.office.email}</span>
+      </div>
+
+      {/* Social Icons */}
+      <div className="flex items-center gap-4 justify-center lg:justify-end">
+        {config?.social?.instagram && (
+          <a href={config.social.instagram} target="_blank">
+            <Instagram className="h-6 w-6 text-black" />
+          </a>
+        )}
+        {config?.social?.facebook && (
+          <a href={config.social.facebook} target="_blank">
+            <Facebook className="h-6 w-6 text-black" />
+          </a>
+        )}
+        {config?.social?.youtube && (
+          <a href={config.social.youtube} target="_blank">
+            <Youtube className="h-6 w-6 text-black" />
+          </a>
+        )}
+
+        <button
+          onClick={() =>
+            navigator.share && navigator.share({ url: window.location.href })
+          }
+        >
+          <Share2 className="h-6 w-6 text-black" />
+        </button>
+      </div>
+    </div>
   );
 
-const sections: Visible[] = [ 
+  const sections: Visible[] = [
     "about",
     "panchayat",
     "schemes",
@@ -185,22 +185,19 @@ const sections: Visible[] = [
 
       {/* WHITE HEADER (STICKY) */}
       <header className="sticky top-0 z-[200] w-full bg-card/95 backdrop-blur-md border-b border-border shadow-sm">
-
         <div className="container mx-auto px-3 sm:px-4 lg:px-6">
           <div className="flex items-center justify-between py-2.5 sm:py-3 md:py-4">
-
             {/* Logo */}
             <Link to={CUSTOM_ROUTES.HOME}>
               <div className="flex items-center gap-4">
-               <div className="w-14 h-14 sm:w-12 sm:h-12 md:w-16 md:h-16 rounded-full bg-white flex items-center justify-center">
-  <LazyLoadImage
-    src="/favicon.png"
-    alt="App Logo"
-    effect="blur"
-    className="w-full h-full object-contain"
-  />
-</div>
-
+                <div className="w-14 h-14 sm:w-12 sm:h-12 md:w-16 md:h-16 rounded-full bg-white flex items-center justify-center">
+                  <LazyLoadImage
+                    src="/favicon.ico"
+                    alt="App Logo"
+                    effect="blur"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
 
                 <div>
                   <h1 className="text-base sm:text-lg md:text-xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
@@ -208,8 +205,7 @@ const sections: Visible[] = [
                   </h1>
                   {config?.village && (
                     <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground">
-                      {config.village.state} {config.village.district && ","}
-                      {" "}
+                      {config.village.state} {config.village.district && ","}{" "}
                       {config.village.district}
                     </p>
                   )}
@@ -220,17 +216,15 @@ const sections: Visible[] = [
             {/* Desktop Navigation */}
             <div className="flex items-center gap-2">
               <nav className="hidden lg:flex items-center gap-0.5 relative">
-
                 {/* HOME Dropdown */}
                 <div className="relative">
-                <Button
-  variant="ghost"
-  className="text-foreground hover:text-primary hover:bg-primary/10"
-  onClick={() => setDesktopHomeOpen(!desktopHomeOpen)}
->
-  {t("header.home")}
-</Button>
-
+                  <Button
+                    variant="ghost"
+                    className="text-foreground hover:text-primary hover:bg-primary/10"
+                    onClick={() => setDesktopHomeOpen(!desktopHomeOpen)}
+                  >
+                    {t("header.home")}
+                  </Button>
 
                   {desktopHomeOpen && (
                     <>
@@ -239,7 +233,11 @@ const sections: Visible[] = [
                         onClick={() => setDesktopHomeOpen(false)}
                       />
                       <div className="absolute top-full left-0 mt-2 w-80 bg-card border border-border rounded-lg shadow-lg z-50 p-4">
-                        <Accordion type="single" collapsible className="space-y-2">
+                        <Accordion
+                          type="single"
+                          collapsible
+                          className="space-y-2"
+                        >
                           {homeMenuSections.map((section, idx) => (
                             <AccordionItem
                               key={section.title}
@@ -261,7 +259,7 @@ const sections: Visible[] = [
                                     className={cn(
                                       "block py-2 px-3 text-sm rounded-md transition-colors hover:bg-accent hover:text-accent-foreground",
                                       location.pathname === item.href &&
-                                      "bg-accent text-accent-foreground"
+                                        "bg-accent text-accent-foreground"
                                     )}
                                   >
                                     {item.name}
@@ -284,14 +282,13 @@ const sections: Visible[] = [
                     className={cn(
                       "text-foreground hover:text-primary hover:bg-primary/10",
                       location.pathname === item.href &&
-                      "bg-primary/10 text-primary"
+                        "bg-primary/10 text-primary"
                     )}
                     asChild
                   >
                     <Link to={item.href}>{item.name}</Link>
                   </Button>
                 ))}
-
               </nav>
 
               {/* Language + Theme */}
@@ -312,8 +309,7 @@ const sections: Visible[] = [
                         onClick={() => navigate("/admin/dashboard")}
                       >
                         <Shield className="h-4 w-4" />
-                       {t("header.admin")}
-
+                        {t("header.admin")}
                       </Button>
                     ) : (
                       <Button
@@ -323,8 +319,7 @@ const sections: Visible[] = [
                         onClick={() => navigate(CUSTOM_ROUTES.USER_DASHBOARD)}
                       >
                         <User className="h-4 w-4" />
-                      {t("header.myProfile")}
-
+                        {t("header.myProfile")}
                       </Button>
                     )}
 
@@ -335,8 +330,7 @@ const sections: Visible[] = [
                       onClick={handleLogout}
                     >
                       <LogOut className="h-4 w-4" />
-                    {t("header.logout")}
-
+                      {t("header.logout")}
                     </Button>
                   </>
                 ) : (
@@ -347,12 +341,10 @@ const sections: Visible[] = [
                     onClick={() => navigate("/auth")}
                   >
                     <LogIn className="h-4 w-4" />
-                {t("header.login")}
-
+                    {t("header.login")}
                   </Button>
                 )}
               </div>
-
             </div>
 
             {/* Mobile Menu Button */}
@@ -368,7 +360,6 @@ const sections: Visible[] = [
                 <Menu className="h-5 w-5" />
               )}
             </Button>
-
           </div>
         </div>
 
@@ -383,9 +374,8 @@ const sections: Visible[] = [
 
               <nav className="fixed top-0 right-0 h-full w-72 bg-card shadow-2xl z-[9999] lg:hidden overflow-y-auto border-l border-border p-4">
                 <div className="flex flex-col gap-2">
-
                   <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 px-2">
-                   {t("header.home")}
+                    {t("header.home")}
                   </div>
 
                   <Accordion type="single" collapsible className="space-y-1">
@@ -395,8 +385,7 @@ const sections: Visible[] = [
                         value={`section-${idx}`}
                         className="border-b border-border last:border-0"
                       >
-                        <AccordionTrigger className="py-3 px-2 text-foreground hover:text-primary [&[data-state=open]>svg]:rotate-90"
-                        >
+                        <AccordionTrigger className="py-3 px-2 text-foreground hover:text-primary [&[data-state=open]>svg]:rotate-90">
                           <div className="flex items-center gap-2 text-sm">
                             <ChevronRight className="h-4 w-4" />
                             <span>{section.title}</span>
@@ -411,7 +400,7 @@ const sections: Visible[] = [
                               className={cn(
                                 "block py-2 px-3 text-sm rounded-md hover:bg-accent",
                                 location.pathname === item.href &&
-                                "bg-accent text-accent-foreground"
+                                  "bg-accent text-accent-foreground"
                               )}
                             >
                               {item.name}
@@ -429,7 +418,7 @@ const sections: Visible[] = [
                       className={cn(
                         "justify-start text-foreground hover:text-primary",
                         location.pathname === item.href &&
-                        "bg-primary/10 text-primary"
+                          "bg-primary/10 text-primary"
                       )}
                       asChild
                       onClick={() => setIsMenuOpen(false)}
@@ -451,7 +440,7 @@ const sections: Visible[] = [
                             }}
                           >
                             <Shield className="h-4 w-4" />
-                          {t("header.admin")}
+                            {t("header.admin")}
                           </Button>
                         ) : (
                           <Button
@@ -463,8 +452,7 @@ const sections: Visible[] = [
                             }}
                           >
                             <User className="h-4 w-4" />
-                         {t("header.myProfile")}
-
+                            {t("header.myProfile")}
                           </Button>
                         )}
 
@@ -474,8 +462,7 @@ const sections: Visible[] = [
                           onClick={handleLogout}
                         >
                           <LogOut className="h-4 w-4" />
-                   {t("header.logout")}
-
+                          {t("header.logout")}
                         </Button>
                       </>
                     ) : (
@@ -488,8 +475,7 @@ const sections: Visible[] = [
                         }}
                       >
                         <LogIn className="h-4 w-4" />
-                {t("header.login")}
-
+                        {t("header.login")}
                       </Button>
                     )}
                   </div>
