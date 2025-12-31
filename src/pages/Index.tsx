@@ -1,23 +1,24 @@
-import React, { useContext,useEffect, lazy, Suspense, memo } from "react"; 
+import React, { useContext, useEffect, lazy, Suspense, memo } from "react";
 import Hero from "@/components/Hero";
 import { VillageContext } from "@/context/VillageContextConfig";
 import { usePageSEO } from "@/hooks/usePageSEO";
 import HeroSkeleton from "@/components/ui/skeletons/HeroSkeleton";
 import SectionSkeleton from "@/components/ui/skeletons/SectionSkeleton";
-import GallerySkeleton from "@/components/ui/skeletons/GallerySkeleton";
 import { VILLAGES } from "@/config/villageConfig";
 import LazySection from "@/components/LazySection";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
 
 /* Lazy-loaded components */
-const ScrollerCardSection = lazy(() => import("@/components/ScrollerCardSection"));
+const ScrollerCardSection = lazy(
+  () => import("@/components/ScrollerCardSection")
+);
 const NewsTicker = lazy(() => import("@/components/NewsTicker"));
 const About = lazy(() => import("@/components/About"));
 const Panchayat = lazy(() => import("@/components/Panchayat"));
 const GovStaff = lazy(() => import("@/components/GovStaff"));
 const Announcements = lazy(() => import("@/components/Announcements"));
-const Schemes = lazy(() => import("@/components/Schemes"));
+// const Schemes = lazy(() => import("@/components/Schemes"));
 const Services = lazy(() => import("@/components/Services"));
 const Development = lazy(() => import("@/components/Development"));
 //const Gallery = lazy(() => import("@/components/Gallery"));
@@ -25,35 +26,12 @@ const Contact = lazy(() => import("@/components/Contact"));
 const PeopleSection = lazy(() => import("@/components/PeopleSection"));
 
 const Index: React.FC = () => {
-  const { t } = useTranslation(); 
+  const { t } = useTranslation();
   const { config, isPageVisible, loading } = useContext(VillageContext);
   const memoizedConfig = config;
-const location = useLocation();
+  const location = useLocation();
 
-useEffect(() => {
-  if (!location.hash) return;
-
-  const id = location.hash.replace("#", "");
-
-  const timeout = setTimeout(() => {
-    const el = document.getElementById(id);
-    if (el) {
-      const yOffset = -120; // header height
-      const y =
-        el.getBoundingClientRect().top +
-        window.pageYOffset +
-        yOffset;
-
-      window.scrollTo({ top: y, behavior: "smooth" });
-    }
-  }, 500);
-
-  
-
-
-    return () => clearTimeout(timeout);
-  }, [location.hash, memoizedConfig]);
-  usePageSEO({
+   usePageSEO({
     title: `${VILLAGES.shivankhed.name} Gram Panchayat | Official Website`,
     description: `Official website of ${VILLAGES.shivankhed.name} Gram Panchayat. Access government schemes, development projects, announcements, services, and contact information.`,
     keywords: [
@@ -66,10 +44,27 @@ useEffect(() => {
     ],
     canonical: "https://shivankhedkhurd.vercel.app",
   });
+
+
   useEffect(() => {
-  console.log("ASHA:", config?.ashaWorkers);
-  console.log("ANGANWADI:", config?.anganwadiWorkers);
-}, [config]);
+    if (!location.hash) return;
+
+    const id = location.hash.replace("#", "");
+
+    const timeout = setTimeout(() => {
+      const el = document.getElementById(id);
+      if (el) {
+        const yOffset = -120; // header height
+        const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
+
+        window.scrollTo({ top: y, behavior: "smooth" });
+      }
+    }, 500);
+
+    return () => clearTimeout(timeout);
+  }, [location.hash, memoizedConfig]);
+
+ 
   // ✅ Normalize ASHA & Anganwadi data (supports old + new DB structure)
   const ashaWorkers =
     memoizedConfig?.ashaWorkers ||
@@ -81,14 +76,13 @@ useEffect(() => {
     (memoizedConfig as any)?.people?.anganwadiWorkers ||
     [];
 
-
   const normalizeWorkers = (list: any[] = []) =>
-  list.map((p) => ({
-    name: p.name,
-    image: p.image,
-    profession: p.profession,
-    description: p.description,
-  }));
+    list.map((p) => ({
+      name: p.name,
+      image: p.image,
+      profession: p.profession,
+      description: p.description,
+    }));
 
   if (loading || !memoizedConfig) return <HeroSkeleton />;
 
@@ -97,7 +91,10 @@ useEffect(() => {
       <main>
         {/* Hero Section */}
         <Suspense fallback={<HeroSkeleton />}>
-          <Hero village={memoizedConfig.village} panchayat={memoizedConfig.panchayat} />
+          <Hero
+            village={memoizedConfig.village}
+            panchayat={memoizedConfig.panchayat}
+          />
         </Suspense>
 
         {/* Scroller Card Section */}
@@ -139,11 +136,11 @@ useEffect(() => {
         />
 
         {/* Schemes */}
-        <LazySection
+        {/* <LazySection
           component={Schemes}
           fallback={<SectionSkeleton />}
           props={{ schemes: memoizedConfig.schemes || [] }}
-        />
+        /> */}
 
         {/* Services */}
         <LazySection
@@ -165,20 +162,22 @@ useEffect(() => {
           fallback={<SectionSkeleton />}
           props={{
             title: t("proudPeople.title") || "Proud of Our People",
-            description: t("proudPeople.description") || "People who make our village proud",
+            description:
+              t("proudPeople.description") ||
+              "People who make our village proud",
             people: memoizedConfig.proudPeople || [],
             sectionId: "proud-people",
           }}
         />
-  <PeopleSection
-  sectionId="asha"
-  people={normalizeWorkers(ashaWorkers)}
-/>
+        <PeopleSection
+          sectionId="asha"
+          people={normalizeWorkers(ashaWorkers)}
+        />
 
-<PeopleSection
-  sectionId="anganwadi"
-  people={normalizeWorkers(anganwadiWorkers)}
-/>
+        <PeopleSection
+          sectionId="anganwadi"
+          people={normalizeWorkers(anganwadiWorkers)}
+        />
 
         {/* Gallery 
         <LazySection
